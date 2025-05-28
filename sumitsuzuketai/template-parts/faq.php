@@ -57,7 +57,7 @@
                         <i class="fas fa-minus"></i>
                     </div>
                 </div>
-<div class="faq-answer">
+                <div class="faq-answer">
                     <span class="answer-mark">A.</span>
                     <p>業界大手から地域密着型まで厳選した優良企業のみです。すべての提携企業は財務状況や過去の取引実績、顧客満足度などの厳しい審査基準をクリアした信頼できる会社ばかりです。具体的な審査基準は企業秘密となりますが、お客様に安心してご利用いただける企業のみをご紹介しています。</p>
                 </div>
@@ -95,3 +95,153 @@
         </div>
     </div>
 </section>
+
+<!-- F&Q アコーディオン JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 他のスクリプトとの競合を避けるため少し遅延
+    setTimeout(function() {
+        initializeFAQ();
+    }, 300);
+});
+
+function initializeFAQ() {
+    try {
+        console.log('F&Q アコーディオンを初期化中...');
+        
+        // F&Q アイテムを取得
+        const faqItems = document.querySelectorAll('#faq-section .faq-item');
+        
+        if (faqItems.length === 0) {
+            console.error('F&Q アイテムが見つかりません');
+            return;
+        }
+        
+        console.log(`${faqItems.length}個のF&Qアイテムを発見`);
+        
+        // 各アイテムにクリックイベントを設定
+        faqItems.forEach(function(item, index) {
+            const question = item.querySelector('.faq-question');
+            const answer = item.querySelector('.faq-answer');
+            
+            if (!question || !answer) {
+                console.error(`F&Q ${index + 1}: 必要な要素が見つかりません`);
+                return;
+            }
+            
+            // クリックイベントを追加
+            question.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isCurrentlyActive = item.classList.contains('active');
+                
+                console.log(`F&Q ${index + 1} がクリックされました (現在の状態: ${isCurrentlyActive ? 'open' : 'closed'})`);
+                
+                // 全てのF&Qを閉じる
+                faqItems.forEach(function(otherItem) {
+                    otherItem.classList.remove('active');
+                    const otherAnswer = otherItem.querySelector('.faq-answer');
+                    if (otherAnswer) {
+                        otherAnswer.style.display = 'none';
+                        otherAnswer.style.maxHeight = '0px';
+                        otherAnswer.style.opacity = '0';
+                    }
+                });
+                
+                // クリックされたF&Qが閉じていた場合のみ開く
+                if (!isCurrentlyActive) {
+                    item.classList.add('active');
+                    answer.style.display = 'block';
+                    setTimeout(function() {
+                        answer.style.maxHeight = '1000px';
+                        answer.style.opacity = '1';
+                    }, 10);
+                    console.log(`F&Q ${index + 1} を開きました`);
+                } else {
+                    console.log(`F&Q ${index + 1} を閉じました`);
+                }
+            });
+            
+            // 初期状態を設定（全て閉じた状態）
+            item.classList.remove('active');
+            answer.style.display = 'none';
+            answer.style.maxHeight = '0px';
+            answer.style.opacity = '0';
+            
+            console.log(`F&Q ${index + 1} にイベントを設定完了`);
+        });
+        
+        console.log('F&Q アコーディオンの初期化が完了しました');
+        
+    } catch (error) {
+        console.error('F&Q 初期化エラー:', error);
+        
+        // フォールバック処理
+        setTimeout(function() {
+            console.log('フォールバック処理を実行中...');
+            addFallbackEvents();
+        }, 500);
+    }
+}
+
+// フォールバック処理
+function addFallbackEvents() {
+    try {
+        const questions = document.querySelectorAll('#faq-section .faq-question');
+        
+        questions.forEach(function(question, index) {
+            question.onclick = function() {
+                const item = this.closest('.faq-item');
+                const answer = item.querySelector('.faq-answer');
+                const isActive = item.classList.contains('active');
+                
+                // 全て閉じる
+                document.querySelectorAll('#faq-section .faq-item').forEach(function(allItem) {
+                    allItem.classList.remove('active');
+                    const allAnswer = allItem.querySelector('.faq-answer');
+                    if (allAnswer) {
+                        allAnswer.style.display = 'none';
+                    }
+                });
+                
+                // クリックしたものが閉じていた場合のみ開く
+                if (!isActive && answer) {
+                    item.classList.add('active');
+                    answer.style.display = 'block';
+                    console.log(`フォールバック: F&Q ${index + 1} を開きました`);
+                }
+            };
+        });
+        
+        console.log('フォールバック処理が完了しました');
+        
+    } catch (error) {
+        console.error('フォールバック処理エラー:', error);
+    }
+}
+
+// ページ完全読み込み後の確認
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        const faqSection = document.getElementById('faq-section');
+        if (faqSection) {
+            console.log('F&Q セクションが正常に読み込まれました');
+            
+            // 動作テスト用関数をグローバルに追加
+            window.testFAQ = function() {
+                console.log('=== F&Q 動作テスト ===');
+                const items = document.querySelectorAll('#faq-section .faq-item');
+                items.forEach(function(item, i) {
+                    const answer = item.querySelector('.faq-answer');
+                    console.log(`F&Q ${i + 1}: ${item.classList.contains('active') ? 'OPEN' : 'CLOSED'} - Display: ${answer ? answer.style.display : 'N/A'}`);
+                });
+                console.log('=====================');
+            };
+            
+        } else {
+            console.error('F&Q セクションが見つかりません');
+        }
+    }, 1000);
+});
+</script>

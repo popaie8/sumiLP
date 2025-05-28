@@ -1,428 +1,214 @@
 <?php
 /**
- * リースバック一括査定 LP テーマ機能 － 完全版（2025-05-13 改訂）
- * 変更点：
- *  1. ショートコード用スラッグをハイフン表記に統一
- *  2. lp_section_shortcode() で「ハイフン → アンダースコア」両形式を自動探索
- *  3. locate_template() を使い、親・子テーマを横断してテンプレートを検索
- *  4. FAQアコーディオンのjQuery実装を追加
+ * すみつづけ隊 LP テーマ機能 – 2025-05-28
+ *  - Vite でビルドした JS/CSS の読み込みを追加
+ *  - ハンドラを sumitsu_handle_lead_submit() に刷新（Step-1/2 共通）
+ *  - 旧 sumitsuzuketai_process_form() は廃止
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // 直接アクセス禁止
+	exit;
 }
 
-/* -------------------------------------------------
- * テーマセットアップ
- * ------------------------------------------------- */
+/* ======================================================
+ * 1. テーマセットアップ
+ * ====================================================== */
 function sumitsuzuketai_setup() {
 	add_theme_support( 'title-tag' );
 	add_theme_support( 'post-thumbnails' );
-	add_theme_support(
-		'html5',
-		array(
-			'search-form',
-			'comment-form',
-			'comment-list',
-			'gallery',
-			'caption',
-		)
-	);
+	add_theme_support( 'html5', array( 'search-form', 'comment-form', 'comment-list', 'gallery', 'caption' ) );
 
-	register_nav_menus(
-		array(
-			'primary' => 'メインメニュー',
-			'footer'  => 'フッターメニュー',
-		)
-	);
+	register_nav_menus( array(
+		'primary' => 'メインメニュー',
+		'footer'  => 'フッターメニュー',
+	) );
 }
 add_action( 'after_setup_theme', 'sumitsuzuketai_setup' );
 
-/* -------------------------------------------------
- * テンプレートパーツ存在チェック（デバッグ用）
- * ------------------------------------------------- */
-function sumitsuzuketai_debug_template_parts() {
-	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-
-		$parts = array(
-			'header-firstview',
-			'user-benefits',
-			'partner-companies',
-			'process-steps',
-			'success-cases',
-			'realtime-status',
-			'main-form',
-			'faq',
-			'concierge',
-			'seo-content',
-			'reviews',
-			'final-cta',
-		);
-
-		foreach ( $parts as $slug ) {
-			$path = locate_template( "template-parts/{$slug}.php", false, false );
-			if ( ! $path ) {
-				error_log( "[sumitsuzuketai] テンプレートパーツ未検出: {$slug}.php" );
-			}
-		}
-	}
-}
-add_action( 'init', 'sumitsuzuketai_debug_template_parts' );
-
-/* -------------------------------------------------
- * スタイルシート & スクリプト
- * ------------------------------------------------- */
+/* ======================================================
+ * 2. フロント用 CSS / JS
+ * ====================================================== */
 function sumitsuzuketai_scripts() {
 
-	// Google Fonts
-	wp_enqueue_style(
-		'google-fonts',
-		'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap',
-		array(),
-		null
-	);
+	/* 共通ライブラリ */
+	wp_enqueue_style( 'google-fonts', 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap', array(), null );
+	wp_enqueue_style( 'font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css', array(), '5.15.4' );
+	wp_enqueue_style( 'sumitsuzuketai-style', get_template_directory_uri() . '/assets/css/main.css', array(), '1.0.0' );
+	wp_enqueue_script( 'jquery' );
+	wp_enqueue_script( 'sumitsuzuketai-main', get_template_directory_uri() . '/assets/js/main.js', array( 'jquery' ), '1.0.0', true );
 
-	// Font Awesome
-	wp_enqueue_style(
-		'font-awesome',
-		'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css',
-		array(),
-		'5.15.4'
-	);
+	/* Step-2 詳細フォーム専用（template-parts/lead-form.php） */
+	if ( is_page_template( 'template-parts/lead-form.php' ) ) {
 
-	// メイン CSS
-	wp_enqueue_style(
-		'sumitsuzuketai-style',
-		get_template_directory_uri() . '/assets/css/main.css',
-		array(),
-		'1.0.0'
-	);
+		// JS（Vite 出力）
+		wp_enqueue_script(
+			'lead-form-js',
+			get_theme_file_uri( '/dist/js/lead.js' ),
+			array(), '1.0.0', true
+		);
 
-	// jQueryを確実に読み込む
-    wp_enqueue_script('jquery');
+		// NiceSelect2 CSS（vite でハッシュ付きファイルが出力される）
+		foreach ( glob( get_theme_file_path( '/dist/js/assets/lead-*.css' ) ) as $css ) {
+			wp_enqueue_style(
+				'lead-form-css',
+				str_replace( get_theme_file_path(), get_theme_file_uri(), $css ),
+				array(), '1.0.0'
+			);
+			break;
+		}
+	}
 
-	// メイン JS
-	wp_enqueue_script(
-		'sumitsuzuketai-script',
-		get_template_directory_uri() . '/assets/js/main.js',
-		array( 'jquery' ),
-		'1.0.0',
-		true
-	);
+	/* --- Script に type="module" を付与 --- */
+    add_filter( 'script_loader_tag', function ( $tag, $handle, $src ) {
+	    if ( 'lead-form-js' === $handle ) {
+		    return '<script type="module" src="' . esc_url( $src ) . '"></script>';
+	    }
+	    return $tag;
+    }, 10, 3 );
 }
 add_action( 'wp_enqueue_scripts', 'sumitsuzuketai_scripts' );
 
-/* -------------------------------------------------
- * FAQアコーディオンのためのスクリプト
- * ------------------------------------------------- */
-function sumitsuzuketai_faq_scripts() {
-    // FAQアコーディオン用のjQueryコードを追加
-    wp_add_inline_script('jquery-core', '
-        jQuery(document).ready(function($) {
-            $(".faq-question").on("click", function() {
-                var $item = $(this).closest(".faq-item");
-                
-                // 他の開いているアイテムを閉じる
-                $(".faq-item.active").not($item).removeClass("active");
-                
-                // クリックしたアイテムの状態を切り替え
-                $item.toggleClass("active");
-                
-                // 手動でスタイルを適用（CSSが動作しない場合のバックアップ）
-                if ($item.hasClass("active")) {
-                    $item.find(".faq-answer").css("display", "block");
-                    $item.find(".fa-plus").css("opacity", 0);
-                    $item.find(".fa-minus").css("opacity", 1);
-                } else {
-                    $item.find(".faq-answer").css("display", "none");
-                    $item.find(".fa-plus").css("opacity", 1);
-                    $item.find(".fa-minus").css("opacity", 0);
-                }
-                
-                return false;
-            });
-        });
-    ');
-}
-add_action( 'wp_enqueue_scripts', 'sumitsuzuketai_faq_scripts', 99 );
+/* ======================================================
+ * 3. FAQ アコーディオン用インライン jQuery
+ * ====================================================== */
+add_action( 'wp_enqueue_scripts', function () {
+	wp_add_inline_script( 'jquery-core', '
+		jQuery(function ($) {
+			$(".faq-question").on("click", function () {
+				const $item = $(this).closest(".faq-item");
+				$(".faq-item.active").not($item).removeClass("active");
+				$item.toggleClass("active");
+			});
+		});
+	', 'after' );
+}, 99 );
 
-/* -------------------------------------------------
- * LP セクション：ショートコード本体
- * ------------------------------------------------- */
+/* ======================================================
+ * 4. ショートコードでセクション呼び出し
+ * ====================================================== */
 function lp_section_shortcode( $atts, $content = null, $tag = '' ) {
-
-	if ( empty( $tag ) ) {
-		return '';
-	}
-
-	// 例：header-firstview → header_firstview も試す
-	$slugs = array_unique(
-		array(
-			$tag,
-			str_replace( '_', '-', $tag ),
-			str_replace( '-', '_', $tag ),
-		)
-	);
-
-	foreach ( $slugs as $slug ) {
-		$template = locate_template( "template-parts/{$slug}.php", false, false );
-		if ( $template ) {
+	if ( ! $tag ) return '';
+	foreach ( array( $tag, str_replace( array( '_', '-' ), array( '-', '_' ), $tag ) ) as $slug ) {
+		if ( $path = locate_template( "template-parts/{$slug}.php", false, false ) ) {
 			ob_start();
-			include $template;
+			include $path;
 			return ob_get_clean();
 		}
 	}
-
-	// 見つからない場合
-	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-		error_log( "[sumitsuzuketai] ショートコード「{$tag}」に対応するテンプレートが見つかりません。" );
-	}
+	if ( WP_DEBUG ) error_log( "[sumitsuzuketai] テンプレート未検出: {$tag}" );
 	return '';
 }
 
-/* -------------------------------------------------
- * ショートコード登録
- * ------------------------------------------------- */
-function register_lp_shortcodes() {
-
+/* 登録 */
+add_action( 'init', function () {
 	$sections = array(
-		'header-firstview',
-		'user-benefits',
-		'partner-companies',
-		'process-steps',
-		'success-cases',
-		'realtime-status',
-		'main-form',
-		'faq',
-		'concierge',
-		'seo-content',
-		'reviews',
-		'final-cta',
+		'header-firstview', 'user-benefits', 'partner-companies', 'process-steps',
+		'success-cases', 'realtime-status', 'main-form', 'faq', 'concierge',
+		'seo-content', 'reviews', 'final-cta',
 	);
+	foreach ( $sections as $slug ) add_shortcode( $slug, 'lp_section_shortcode' );
+} );
 
-	foreach ( $sections as $slug ) {
-		add_shortcode( $slug, 'lp_section_shortcode' );
+/* ======================================================
+ * 5. リード用カスタム投稿タイプ
+ * ====================================================== */
+add_action( 'init', function () {
+	register_post_type( 'lead', array(
+		'labels'       => array( 'name' => '査定依頼', 'singular_name' => '査定依頼' ),
+		'public'       => false,
+		'show_ui'      => true,
+		'menu_icon'    => 'dashicons-clipboard',
+		'supports'     => array( 'title' ),
+	) );
+} );
+
+/* ======================================================
+ * 6. Step-1 / Step-2 共通ハンドラ
+ * ====================================================== */
+add_action( 'admin_post_nopriv_lead_submit', 'sumitsu_handle_lead_submit' );
+add_action( 'admin_post_lead_submit',        'sumitsu_handle_lead_submit' );
+
+function sumitsu_handle_lead_submit() {
+
+	$fields = array();
+	foreach ( array(
+		'zip', 'property-type', 'pref', 'city', 'town', 'chome', 'banchi',
+		'area', 'age', 'name', 'tel', 'email'
+	) as $key ) {
+		$fields[ $key ] = isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : '';
 	}
-}
-add_action( 'init', 'register_lp_shortcodes' );
 
-/* -------------------------------------------------
- * オプションページ（外観→カスタマイズ でも可）
- * ------------------------------------------------- */
-function sumitsuzuketai_add_admin_menu() {
-	add_menu_page(
-		'すみつづけ隊設定',
-		'すみつづけ隊設定',
-		'manage_options',
-		'sumitsuzuketai-settings',
-		'sumitsuzuketai_settings_page',
-		'dashicons-admin-home',
-		20
-	);
-}
-add_action( 'admin_menu', 'sumitsuzuketai_add_admin_menu' );
+	/* 1) 保存 */
+	$lead_id = wp_insert_post( array(
+		'post_type'   => 'lead',
+		'post_status' => 'publish',
+		'post_title'  => $fields['name'] . ' - ' . current_time( 'Y-m-d H:i:s' ),
+	) );
 
-function sumitsuzuketai_settings_page() {
-	?>
-	<div class="wrap">
-		<h1>すみつづけ隊 LP 設定</h1>
-		<form method="post" action="options.php">
-			<?php
-			settings_fields( 'sumitsuzuketai_options' );
-			do_settings_sections( 'sumitsuzuketai-settings' );
-			submit_button();
-			?>
-		</form>
-	</div>
-	<?php
-}
+	if ( $lead_id ) {
+		foreach ( $fields as $k => $v ) update_post_meta( $lead_id, $k, $v );
+	}
 
-function sumitsuzuketai_settings_init() {
+	/* 2) メール通知 */
+	$to      = get_option( 'admin_email' );
+	$subject = '【すみつづけ隊】新しい査定依頼';
+	$body    = <<<EOT
+郵便番号: {$fields['zip']}
+物件種別: {$fields['property-type']}
+住所    : {$fields['pref']}{$fields['city']}{$fields['town']}{$fields['chome']}丁目 {$fields['banchi']}
+面積    : {$fields['area']}㎡
+築年数  : {$fields['age']}年
 
-	register_setting( 'sumitsuzuketai_options', 'sumitsuzuketai_options' );
-
-	add_settings_section(
-		'sumitsuzuketai_section_contact',
-		'連絡先設定',
-		'sumitsuzuketai_section_contact_callback',
-		'sumitsuzuketai-settings'
-	);
-
-	add_settings_field(
-		'phone_number',
-		'電話番号',
-		'sumitsuzuketai_phone_number_render',
-		'sumitsuzuketai-settings',
-		'sumitsuzuketai_section_contact'
-	);
-
-	add_settings_field(
-		'business_hours',
-		'営業時間',
-		'sumitsuzuketai_business_hours_render',
-		'sumitsuzuketai-settings',
-		'sumitsuzuketai_section_contact'
-	);
-}
-add_action( 'admin_init', 'sumitsuzuketai_settings_init' );
-
-function sumitsuzuketai_section_contact_callback() {
-	echo 'LP に表示する連絡先情報を設定してください。';
-}
-
-function sumitsuzuketai_phone_number_render() {
-	$options = get_option( 'sumitsuzuketai_options' );
-	?>
-	<input type="text" name="sumitsuzuketai_options[phone_number]" value="<?php echo isset( $options['phone_number'] ) ? esc_attr( $options['phone_number'] ) : ''; ?>" />
-	<?php
-}
-
-function sumitsuzuketai_business_hours_render() {
-	$options = get_option( 'sumitsuzuketai_options' );
-	?>
-	<input type="text" name="sumitsuzuketai_options[business_hours]" value="<?php echo isset( $options['business_hours'] ) ? esc_attr( $options['business_hours'] ) : ''; ?>" />
-	<?php
-}
-
-/* -------------------------------------------------
- * リード専用カスタム投稿タイプ
- * ------------------------------------------------- */
-function sumitsuzuketai_register_post_types() {
-
-	register_post_type(
-		'lead',
-		array(
-			'labels'        => array(
-				'name'          => '査定依頼',
-				'singular_name' => '査定依頼',
-			),
-			'public'        => false,
-			'show_ui'       => true,
-			'menu_icon'     => 'dashicons-clipboard',
-			'supports'      => array( 'title' ),
-			'capability_type' => 'post',
-		)
-	);
-}
-add_action( 'init', 'sumitsuzuketai_register_post_types' );
-
-/* -------------------------------------------------
- * フォーム送信処理
- * ------------------------------------------------- */
-function sumitsuzuketai_process_form() {
-
-	if (
-		isset( $_POST['submit_assessment_form'] )
-		&& wp_verify_nonce( $_POST['assessment_form_nonce'], 'assessment_form_action' )
-	) {
-
-		$name            = sanitize_text_field( $_POST['name'] );
-		$phone           = sanitize_text_field( $_POST['phone'] );
-		$email           = sanitize_email( $_POST['email'] );
-		$postal_code     = sanitize_text_field( $_POST['postal-code'] );
-		$property_type   = sanitize_text_field( $_POST['property-type'] );
-		$property_addr   = sanitize_text_field( $_POST['property-address'] );
-		$property_size   = intval( $_POST['property-size'] );
-		$property_age    = intval( $_POST['property-age'] );
-
-		$lead_id = wp_insert_post(
-			array(
-				'post_title'  => $name . ' - ' . current_time( 'Y-m-d H:i:s' ),
-				'post_type'   => 'lead',
-				'post_status' => 'publish',
-			)
-		);
-
-		if ( $lead_id ) {
-
-			update_post_meta( $lead_id, 'phone', $phone );
-			update_post_meta( $lead_id, 'email', $email );
-			update_post_meta( $lead_id, 'postal_code', $postal_code );
-			update_post_meta( $lead_id, 'property_type', $property_type );
-			update_post_meta( $lead_id, 'property_address', $property_addr );
-			update_post_meta( $lead_id, 'property_size', $property_size );
-			update_post_meta( $lead_id, 'property_age', $property_age );
-			update_post_meta( $lead_id, 'ip_address', $_SERVER['REMOTE_ADDR'] );
-			update_post_meta( $lead_id, 'user_agent', $_SERVER['HTTP_USER_AGENT'] );
-			update_post_meta( $lead_id, 'referrer', isset( $_SERVER['HTTP_REFERER'] ) ? $_SERVER['HTTP_REFERER'] : '' );
-
-			$to      = get_option( 'admin_email' );
-			$subject = '【すみつづけ隊】新しい査定依頼がありました';
-			$message = <<<EOT
-以下の内容で査定依頼がありました。
-
-名前: {$name}
-電話番号: {$phone}
-メールアドレス: {$email}
-郵便番号: {$postal_code}
-物件種別: {$property_type}
-物件所在地: {$property_addr}
-物件面積: {$property_size}㎡
-築年数: {$property_age}年
-IP: {$_SERVER['REMOTE_ADDR']}
+お名前  : {$fields['name']}
+電話    : {$fields['tel']}
+メール  : {$fields['email']}
 EOT;
+	wp_mail( $to, $subject, $body );
 
-			wp_mail( $to, $subject, $message );
+	/* 3) スプレッドシート転送（Apps Script）—任意 */
+	wp_remote_post( 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXX/exec', array(
+		'body'    => $fields + array( 'secret' => 'sumitsu2025' ),
+		'timeout' => 15,
+	) );
 
-			wp_redirect( home_url( '/thanks/' ) );
-			exit;
-		}
-	}
+	/* 4) サンクスページへ */
+	wp_safe_redirect( home_url( '/thanks/' ) );
+	exit;
 }
-add_action( 'template_redirect', 'sumitsuzuketai_process_form' );
 
-/* -------------------------------------------------
- * カスタマイザー
- * ------------------------------------------------- */
+/* ======================================================
+ * 7. カスタマイザー（電話・営業時間）
+ * ====================================================== */
 function sumitsuzuketai_customize_register( $wp_customize ) {
 
-	$wp_customize->add_section(
-		'sumitsuzuketai_lp_options',
-		array(
-			'title'    => 'LP 設定',
-			'priority' => 30,
-		)
-	);
+	$wp_customize->add_section( 'sumitsuzuketai_lp', array(
+		'title'    => 'LP 連絡先',
+		'priority' => 30,
+	) );
 
-	// 電話番号
-	$wp_customize->add_setting(
-		'sumitsuzuketai_phone',
-		array(
-			'default'           => '0120-XXX-XXX',
-			'sanitize_callback' => 'sanitize_text_field',
-		)
-	);
-	$wp_customize->add_control(
-		'sumitsuzuketai_phone',
-		array(
-			'label'   => '電話番号',
-			'section' => 'sumitsuzuketai_lp_options',
-			'type'    => 'text',
-		)
-	);
+	$wp_customize->add_setting( 'sumitsuzuketai_phone', array(
+		'default'           => '0120-XXX-XXX',
+		'sanitize_callback' => 'sanitize_text_field',
+	) );
+	$wp_customize->add_control( 'sumitsuzuketai_phone', array(
+		'label'   => '電話番号',
+		'section' => 'sumitsuzuketai_lp',
+		'type'    => 'text',
+	) );
 
-	// 営業時間
-	$wp_customize->add_setting(
-		'sumitsuzuketai_hours',
-		array(
-			'default'           => '9:00〜19:00（年中無休）',
-			'sanitize_callback' => 'sanitize_text_field',
-		)
-	);
-	$wp_customize->add_control(
-		'sumitsuzuketai_hours',
-		array(
-			'label'   => '営業時間',
-			'section' => 'sumitsuzuketai_lp_options',
-			'type'    => 'text',
-		)
-	);
+	$wp_customize->add_setting( 'sumitsuzuketai_hours', array(
+		'default'           => '9:00〜19:00（年中無休）',
+		'sanitize_callback' => 'sanitize_text_field',
+	) );
+	$wp_customize->add_control( 'sumitsuzuketai_hours', array(
+		'label'   => '営業時間',
+		'section' => 'sumitsuzuketai_lp',
+		'type'    => 'text',
+	) );
 }
 add_action( 'customize_register', 'sumitsuzuketai_customize_register' );
 
-/* -------------------------------------------------
- * カスタマイザーの値を取得するヘルパー
- * ------------------------------------------------- */
+/* カスタマイザー値取得ヘルパ */
 function sumitsuzuketai_get_option( $key, $default = '' ) {
 	return esc_html( get_theme_mod( $key, $default ) );
 }

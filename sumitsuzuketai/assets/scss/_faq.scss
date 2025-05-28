@@ -1,0 +1,138 @@
+.faq-section {
+  padding: 80px 0;
+  background-color: #f9f9f9;
+  
+  .section-title {
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 50px;
+    position: relative;
+    
+    &:after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      background-color: #0066cc;
+      margin: 15px auto 0;
+    }
+  }
+  
+  .faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .faq-item {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    overflow: hidden;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .faq-question {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      
+      .question-mark {
+        background-color: #0066cc;
+        color: #fff;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+        flex-shrink: 0;
+      }
+      
+      h3 {
+        flex: 1;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+      }
+      
+      .toggle-icon {
+        flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+        position: relative;
+        
+        i {
+          position: absolute;
+          top: 0;
+          left: 0;
+          font-size: 20px;
+          color: #0066cc;
+          transition: opacity 0.3s;
+        }
+        
+        .fa-minus {
+          opacity: 0;
+        }
+      }
+      
+      &:hover {
+        h3 {
+          color: #0066cc;
+        }
+      }
+    }
+    
+    .faq-answer {
+      padding: 0 20px 20px;
+      display: none;
+      
+      .answer-mark {
+        background-color: #ff6600;
+        color: #fff;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+        float: left;
+      }
+      
+      p {
+        margin: 0;
+        color: #666;
+        font-size: 16px;
+        line-height: 1.6;
+        margin-left: 45px;
+      }
+    }
+    
+    &.active {
+      .toggle-icon {
+        .fa-plus {
+          opacity: 0;
+        }
+        
+        .fa-minus {
+          opacity: 1;
+        }
+      }
+      
+      .faq-answer {
+        display: block;
+      }
+    }
+  }
+}

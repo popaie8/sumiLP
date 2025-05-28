@@ -1,0 +1,417 @@
+// F&Q セクション修正版SCSS（背景・表示問題修正）
+.faq-section {
+  padding: 80px 0;
+  background-color: #f9f9f9 !important; // 背景色を強制的に固定
+  
+  .section-title {
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 50px;
+    position: relative;
+    
+    &:after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      background-color: #0066cc;
+      margin: 15px auto 0;
+    }
+  }
+  
+  .faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .faq-item {
+    background-color: #fff !important; // 背景色を強制的に固定
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    &:hover {
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .faq-question {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s ease;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      background-color: #fff !important; // 背景色を強制的に固定
+      
+      &:hover {
+        background-color: rgba(0, 102, 204, 0.02) !important;
+        
+        h3 {
+          color: #0066cc;
+        }
+      }
+      
+      .question-mark {
+        background-color: #0066cc;
+        color: #fff;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+        flex-shrink: 0;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+      
+      h3 {
+        flex: 1;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333 !important; // テキスト色を強制的に固定
+        margin: 0;
+        transition: color 0.3s ease;
+        line-height: 1.4;
+      }
+      
+      .toggle-icon {
+        flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+        position: relative;
+        
+        i {
+          position: absolute;
+          top: 0;
+          left: 0;
+          font-size: 20px;
+          color: #0066cc;
+          transition: all 0.3s ease;
+          transform-origin: center;
+        }
+        
+        .fa-plus {
+          opacity: 1;
+          transform: rotate(0deg);
+        }
+        
+        .fa-minus {
+          opacity: 0;
+          transform: rotate(-90deg);
+        }
+      }
+    }
+    
+    .faq-answer {
+      padding: 0 20px 20px;
+      display: none; // 初期状態は非表示
+      background-color: #fafafa !important; // 背景色を強制的に固定
+      transition: all 0.3s ease;
+      
+      .answer-mark {
+        background-color: #ff6600;
+        color: #fff;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+        float: left;
+        margin-top: 3px;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+      
+      p {
+        margin: 0;
+        color: #666 !important; // テキスト色を強制的に固定
+        font-size: 16px;
+        line-height: 1.6;
+        margin-left: 45px;
+        padding-top: 10px;
+        word-break: break-word;
+        overflow-wrap: break-word;
+      }
+    }
+    
+    // アクティブ状態
+    &.active {
+      box-shadow: 0 5px 20px rgba(0, 102, 204, 0.15);
+      
+      .faq-question {
+        background-color: rgba(0, 102, 204, 0.05) !important;
+        border-bottom: 1px solid rgba(0, 102, 204, 0.1);
+        
+        .question-mark {
+          background-color: #0052a3;
+          transform: scale(1.05);
+        }
+        
+        h3 {
+          color: #0066cc !important;
+        }
+        
+        .toggle-icon {
+          .fa-plus {
+            opacity: 0;
+            transform: rotate(90deg);
+          }
+          
+          .fa-minus {
+            opacity: 1;
+            transform: rotate(0deg);
+          }
+        }
+      }
+      
+      .faq-answer {
+        display: block !important; // アクティブ時は表示
+        opacity: 1 !important;
+        max-height: none !important;
+      }
+    }
+  }
+}
+
+// モバイル対応
+@media (max-width: 768px) {
+  .faq-section {
+    padding: 60px 0;
+    background-color: #f9f9f9 !important;
+    
+    .section-title {
+      font-size: 28px;
+      margin-bottom: 40px;
+      
+      &:after {
+        width: 60px;
+        height: 3px;
+      }
+    }
+    
+    .faq-container {
+      padding: 0 15px;
+    }
+    
+    .faq-item {
+      margin-bottom: 15px;
+      background-color: #fff !important;
+      
+      .faq-question {
+        padding: 15px;
+        background-color: #fff !important;
+        
+        .question-mark {
+          width: 25px;
+          height: 25px;
+          font-size: 12px;
+          margin-right: 12px;
+        }
+        
+        h3 {
+          font-size: 16px;
+          line-height: 1.3;
+          color: #333 !important;
+        }
+        
+        .toggle-icon {
+          width: 20px;
+          height: 20px;
+          
+          i {
+            font-size: 18px;
+          }
+        }
+      }
+      
+      .faq-answer {
+        padding: 0 15px 15px;
+        background-color: #fafafa !important;
+        
+        .answer-mark {
+          width: 25px;
+          height: 25px;
+          font-size: 12px;
+          margin-right: 12px;
+        }
+        
+        p {
+          font-size: 14px;
+          line-height: 1.5;
+          margin-left: 37px;
+          color: #666 !important;
+        }
+      }
+      
+      &.active {
+        .faq-question {
+          background-color: rgba(0, 102, 204, 0.05) !important;
+        }
+        
+        .faq-answer {
+          display: block !important;
+        }
+      }
+    }
+  }
+}
+
+// 小さなスマートフォン対応
+@media (max-width: 480px) {
+  .faq-section {
+    padding: 50px 0;
+    background-color: #f9f9f9 !important;
+    
+    .section-title {
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+    
+    .faq-item {
+      border-radius: 8px;
+      background-color: #fff !important;
+      
+      .faq-question {
+        padding: 12px;
+        background-color: #fff !important;
+        
+        h3 {
+          font-size: 15px;
+          color: #333 !important;
+        }
+      }
+      
+      .faq-answer {
+        padding: 0 12px 12px;
+        background-color: #fafafa !important;
+        
+        p {
+          font-size: 13px;
+          color: #666 !important;
+        }
+      }
+      
+      &.active {
+        .faq-question {
+          background-color: rgba(0, 102, 204, 0.05) !important;
+        }
+        
+        .faq-answer {
+          display: block !important;
+        }
+      }
+    }
+  }
+}
+
+// 高コントラストモード対応（ダークモード無効化）
+@media (prefers-contrast: high) {
+  .faq-section {
+    background-color: #f9f9f9 !important;
+    
+    .faq-item {
+      border: 2px solid #333;
+      background-color: #fff !important;
+      
+      .faq-question {
+        background-color: #fff !important;
+        
+        .question-mark {
+          background-color: #000;
+        }
+        
+        h3 {
+          color: #000 !important;
+        }
+        
+        .toggle-icon i {
+          color: #000;
+        }
+      }
+      
+      .faq-answer {
+        background-color: #fafafa !important;
+        
+        .answer-mark {
+          background-color: #000;
+        }
+        
+        p {
+          color: #000 !important;
+        }
+      }
+    }
+  }
+}
+
+// ダークモード対応を無効化（背景問題の原因）
+@media (prefers-color-scheme: dark) {
+  .faq-section {
+    background-color: #f9f9f9 !important; // 強制的に明るい背景
+    
+    .section-title {
+      color: #333 !important; // 強制的にダークテキスト
+      
+      &:after {
+        background-color: #0066cc !important;
+      }
+    }
+    
+    .faq-item {
+      background-color: #fff !important; // 強制的に白背景
+      
+      .faq-question {
+        background-color: #fff !important;
+        
+        h3 {
+          color: #333 !important; // 強制的にダークテキスト
+        }
+        
+        &:hover {
+          background-color: rgba(0, 102, 204, 0.02) !important;
+          
+          h3 {
+            color: #0066cc !important;
+          }
+        }
+      }
+      
+      .faq-answer {
+        background-color: #fafafa !important;
+        
+        p {
+          color: #666 !important; // 強制的にダークテキスト
+        }
+      }
+      
+      &.active {
+        .faq-question {
+          background-color: rgba(0, 102, 204, 0.05) !important;
+          
+          h3 {
+            color: #0066cc !important;
+          }
+        }
+      }
+    }
+  }
+}

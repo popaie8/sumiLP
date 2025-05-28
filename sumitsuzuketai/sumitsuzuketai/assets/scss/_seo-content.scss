@@ -1,0 +1,121 @@
+.seo-content {
+  padding: 80px 0;
+  background-color: #f9f9f9;
+  
+  .section-title {
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 50px;
+    position: relative;
+    
+    &:after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      background-color: #0066cc;
+      margin: 15px auto 0;
+    }
+  }
+  
+  .knowledge-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    
+    @media (max-width: 992px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .knowledge-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+  
+  .knowledge-title {
+    background-color: #0066cc;
+    color: #fff;
+    padding: 15px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  .knowledge-content {
+    padding: 20px;
+    
+    p {
+      font-size: 16px;
+      color: #333;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+    
+    ul {
+      margin-bottom: 20px;
+      padding-left: 20px;
+      
+      li {
+        margin-bottom: 8px;
+        color: #333;
+      }
+    }
+    
+    h4 {
+      font-size: 16px;
+      font-weight: bold;
+      color: #0066cc;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    
+    .comparison-table, .area-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      
+      th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+        font-size: 14px;
+      }
+      
+      th {
+        background-color: #f0f0f0;
+        color: #333;
+        font-weight: bold;
+      }
+      
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+    }
+    
+    .mini-cta {
+      text-align: center;
+      margin-top: 25px;
+      
+      a {
+        display: inline-block;
+        background-color: #ff6600;
+        color: #fff;
+        font-size: 14px;
+        font-weight: bold;
+        padding: 8px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+        
+        &:hover {
+          background-color: darken(#ff6600, 10%);
+        }
+      }
+    }
+  }
+}

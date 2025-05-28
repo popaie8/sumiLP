@@ -1,0 +1,232 @@
+.concierge-section {
+  padding: 80px 0;
+  background-color: #fff;
+  
+  .section-title {
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    
+    @media (max-width: 768px) {
+      font-size: 28px;
+    }
+  }
+  
+  .section-subtitle {
+    text-align: center;
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 50px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    
+    @media (max-width: 768px) {
+      font-size: 16px;
+      margin-bottom: 40px;
+    }
+  }
+  
+  .enhanced-features {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .feature-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    display: flex;
+    align-items: flex-start;
+    gap: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      text-align: center;
+      padding: 25px 20px;
+      gap: 20px;
+    }
+  }
+  
+  .feature-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    
+    i {
+      font-size: 24px;
+      color: white;
+    }
+  }
+  
+  .feature-content {
+    flex: 1;
+    
+    h3 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      
+      @media (max-width: 768px) {
+        font-size: 20px;
+      }
+    }
+    
+    .feature-description {
+      font-size: 16px;
+      color: #555;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    
+    .highlight {
+      background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+      color: #2c3e50;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+  }
+  
+  // 特典アイテム（1つ目のカード用）
+  .feature-benefits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .benefit-item {
+    background: #f8f9ff;
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    i {
+      color: #667eea;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    
+    div {
+      display: flex;
+      flex-direction: column;
+      
+      strong {
+        font-size: 14px;
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+      
+      span {
+        font-size: 13px;
+        color: #666;
+      }
+    }
+  }
+  
+  // 統計情報（2つ目のカード用）
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 10px;
+    
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .stat-item {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 15px;
+    border-radius: 10px;
+    text-align: center;
+    
+    .stat-number {
+      font-size: 28px;
+      font-weight: bold;
+      display: block;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    
+    .stat-label {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+  }
+  
+  // プロセスステップ（3つ目のカード用）
+  .process-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .step-item {
+    background: #f8f9ff;
+    padding: 20px 15px;
+    border-radius: 10px;
+    text-align: center;
+    
+    .step-number {
+      background: #667eea;
+      color: white;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin: 0 auto 12px;
+      font-size: 16px;
+    }
+    
+    span {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2c3e50;
+      line-height: 1.3;
+    }
+  }
+}

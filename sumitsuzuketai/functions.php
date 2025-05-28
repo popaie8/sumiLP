@@ -4,6 +4,7 @@
  *  - Vite でビルドした JS/CSS の読み込みを追加
  *  - ハンドラを sumitsu_handle_lead_submit() に刷新（Step-1/2 共通）
  *  - 旧 sumitsuzuketai_process_form() は廃止
+ *  - ステップフォーム対応で新フィールドを追加
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -123,19 +124,48 @@ add_action( 'init', function () {
 } );
 
 /* ======================================================
- * 6. Step-1 / Step-2 共通ハンドラ
+ * 6. Step-1 / Step-2 共通ハンドラ（進化版）
  * ====================================================== */
 add_action( 'admin_post_nopriv_lead_submit', 'sumitsu_handle_lead_submit' );
 add_action( 'admin_post_lead_submit',        'sumitsu_handle_lead_submit' );
 
 function sumitsu_handle_lead_submit() {
 
+	// 基本フィールド
 	$fields = array();
 	foreach ( array(
 		'zip', 'property-type', 'pref', 'city', 'town', 'chome', 'banchi',
-		'area', 'age', 'name', 'tel', 'email'
+		'area', 'age', 'name', 'tel', 'email', 'remarks'
 	) as $key ) {
 		$fields[ $key ] = isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : '';
+	}
+
+	// 新機能：物件種別ごとの詳細フィールド
+	$property_details = array();
+	
+	// 間取り情報
+	if ( isset( $_POST['layout_rooms'] ) ) {
+		$property_details['layout_rooms'] = sanitize_text_field( $_POST['layout_rooms'] );
+	}
+	if ( isset( $_POST['layout_type'] ) ) {
+		$property_details['layout_type'] = sanitize_text_field( $_POST['layout_type'] );
+	}
+
+	// 面積関連（単位付き）
+	$area_fields = array( 'area', 'building_area', 'land_area' );
+	foreach ( $area_fields as $field ) {
+		if ( isset( $_POST[ $field ] ) ) {
+			$property_details[ $field ] = sanitize_text_field( $_POST[ $field ] );
+		}
+		$unit_field = $field . '_unit';
+		if ( isset( $_POST[ $unit_field ] ) ) {
+			$property_details[ $unit_field ] = sanitize_text_field( $_POST[ $unit_field ] );
+		}
+	}
+
+	// その他の種類
+	if ( isset( $_POST['other_type'] ) ) {
+		$property_details['other_type'] = sanitize_text_field( $_POST['other_type'] );
 	}
 
 	/* 1) 保存 */
@@ -146,28 +176,69 @@ function sumitsu_handle_lead_submit() {
 	) );
 
 	if ( $lead_id ) {
-		foreach ( $fields as $k => $v ) update_post_meta( $lead_id, $k, $v );
+		// 基本フィールドを保存
+		foreach ( $fields as $k => $v ) {
+			update_post_meta( $lead_id, $k, $v );
+		}
+		
+		// 物件詳細を保存
+		foreach ( $property_details as $k => $v ) {
+			update_post_meta( $lead_id, $k, $v );
+		}
 	}
 
-	/* 2) メール通知 */
+	/* 2) メール通知（進化版） */
 	$to      = get_option( 'admin_email' );
 	$subject = '【すみつづけ隊】新しい査定依頼';
-	$body    = <<<EOT
+	
+	// 間取り情報の整形
+	$layout_info = '';
+	if ( ! empty( $property_details['layout_rooms'] ) && ! empty( $property_details['layout_type'] ) ) {
+		$layout_info = $property_details['layout_rooms'] . $property_details['layout_type'];
+	}
+
+	// 面積情報の整形
+	$area_info = '';
+	if ( ! empty( $fields['area'] ) ) {
+		$area_unit = ! empty( $property_details['area_unit'] ) ? $property_details['area_unit'] : '㎡';
+		$area_info .= "専有面積: {$fields['area']}{$area_unit}\n";
+	}
+	if ( ! empty( $property_details['building_area'] ) ) {
+		$building_unit = ! empty( $property_details['building_area_unit'] ) ? $property_details['building_area_unit'] : '㎡';
+		$area_info .= "建物面積: {$property_details['building_area']}{$building_unit}\n";
+	}
+	if ( ! empty( $property_details['land_area'] ) ) {
+		$land_unit = ! empty( $property_details['land_area_unit'] ) ? $property_details['land_area_unit'] : '㎡';
+		$area_info .= "土地面積: {$property_details['land_area']}{$land_unit}\n";
+	}
+
+	$body = <<<EOT
+【物件情報】
 郵便番号: {$fields['zip']}
 物件種別: {$fields['property-type']}
 住所    : {$fields['pref']}{$fields['city']}{$fields['town']}{$fields['chome']}丁目 {$fields['banchi']}
-面積    : {$fields['area']}㎡
-築年数  : {$fields['age']}年
+間取り  : {$layout_info}
+{$area_info}築年数  : {$fields['age']}年
 
+【お客様情報】
 お名前  : {$fields['name']}
 電話    : {$fields['tel']}
 メール  : {$fields['email']}
+
+【ご要望・備考】
+{$fields['remarks']}
+
+---
+投稿日時: {datetime}
 EOT;
+
+	$body = str_replace( '{datetime}', current_time( 'Y-m-d H:i:s' ), $body );
 	wp_mail( $to, $subject, $body );
 
 	/* 3) スプレッドシート転送（Apps Script）—任意 */
+	$post_data = array_merge( $fields, $property_details, array( 'secret' => 'sumitsu2025' ) );
 	wp_remote_post( 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXX/exec', array(
-		'body'    => $fields + array( 'secret' => 'sumitsu2025' ),
+		'body'    => $post_data,
 		'timeout' => 15,
 	) );
 
@@ -211,4 +282,98 @@ add_action( 'customize_register', 'sumitsuzuketai_customize_register' );
 /* カスタマイザー値取得ヘルパ */
 function sumitsuzuketai_get_option( $key, $default = '' ) {
 	return esc_html( get_theme_mod( $key, $default ) );
+}
+
+/* ======================================================
+ * 8. 管理画面での査定依頼詳細表示（進化版）
+ * ====================================================== */
+add_action( 'add_meta_boxes', function () {
+	add_meta_box(
+		'lead_details',
+		'査定依頼詳細',
+		'lead_details_meta_box',
+		'lead'
+	);
+} );
+
+function lead_details_meta_box( $post ) {
+	$meta = get_post_meta( $post->ID );
+	
+	echo '<table class="form-table">';
+	
+	// 基本情報
+	echo '<tr><th colspan="2"><strong>基本情報</strong></th></tr>';
+	$basic_fields = array(
+		'zip' => '郵便番号',
+		'property-type' => '物件種別',
+		'pref' => '都道府県',
+		'city' => '市区町村',
+		'town' => '町名',
+		'chome' => '丁目',
+		'banchi' => '番地・建物名'
+	);
+	
+	foreach ( $basic_fields as $key => $label ) {
+		$value = isset( $meta[ $key ][0] ) ? $meta[ $key ][0] : '';
+		echo "<tr><th>{$label}</th><td>" . esc_html( $value ) . "</td></tr>";
+	}
+	
+	// 物件詳細
+	echo '<tr><th colspan="2"><strong>物件詳細</strong></th></tr>';
+	
+	// 間取り
+	$layout_rooms = isset( $meta['layout_rooms'][0] ) ? $meta['layout_rooms'][0] : '';
+	$layout_type = isset( $meta['layout_type'][0] ) ? $meta['layout_type'][0] : '';
+	if ( $layout_rooms && $layout_type ) {
+		echo "<tr><th>間取り</th><td>" . esc_html( $layout_rooms . $layout_type ) . "</td></tr>";
+	}
+	
+	// 面積情報
+	$area_fields = array(
+		'area' => '専有面積',
+		'building_area' => '建物面積',
+		'land_area' => '土地面積'
+	);
+	
+	foreach ( $area_fields as $key => $label ) {
+		$value = isset( $meta[ $key ][0] ) ? $meta[ $key ][0] : '';
+		$unit = isset( $meta[ $key . '_unit' ][0] ) ? $meta[ $key . '_unit' ][0] : '㎡';
+		if ( $value ) {
+			echo "<tr><th>{$label}</th><td>" . esc_html( $value . $unit ) . "</td></tr>";
+		}
+	}
+	
+	// 築年数
+	$age = isset( $meta['age'][0] ) ? $meta['age'][0] : '';
+	if ( $age ) {
+		$age_display = $age === '31' ? '31年以上・正確に覚えていない' : $age . '年';
+		echo "<tr><th>築年数</th><td>" . esc_html( $age_display ) . "</td></tr>";
+	}
+	
+	// その他種類
+	$other_type = isset( $meta['other_type'][0] ) ? $meta['other_type'][0] : '';
+	if ( $other_type ) {
+		echo "<tr><th>種類</th><td>" . esc_html( $other_type ) . "</td></tr>";
+	}
+	
+	// お客様情報
+	echo '<tr><th colspan="2"><strong>お客様情報</strong></th></tr>';
+	$customer_fields = array(
+		'name' => 'お名前',
+		'tel' => '電話番号',
+		'email' => 'メールアドレス'
+	);
+	
+	foreach ( $customer_fields as $key => $label ) {
+		$value = isset( $meta[ $key ][0] ) ? $meta[ $key ][0] : '';
+		echo "<tr><th>{$label}</th><td>" . esc_html( $value ) . "</td></tr>";
+	}
+	
+	// 備考
+	$remarks = isset( $meta['remarks'][0] ) ? $meta['remarks'][0] : '';
+	if ( $remarks ) {
+		echo "<tr><th>ご要望・備考</th><td>" . nl2br( esc_html( $remarks ) ) . "</td></tr>";
+	}
+	
+	echo '</table>';
 }

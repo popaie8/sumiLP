@@ -93,13 +93,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         lastScrollTop = scrollTop;
         
-        // フローティングCTAの表示制御
+        // 🔥 修正: フローティングCTAの表示制御を改善
         var floatingCta = document.getElementById('floating-cta');
         if (floatingCta) {
             if (scrollTop > 300) {
                 floatingCta.style.display = 'block';
+                floatingCta.style.opacity = '1';
             } else {
                 floatingCta.style.display = 'none';
+                floatingCta.style.opacity = '0';
             }
         }
     });
@@ -258,23 +260,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 item.classList.add('active');
                 var content = item.querySelector('.accordion-content');
                 if (content) {
-                    content.style.maxHeight = 'none';
-                    content.style.padding = '0';
-                }
-            });
-            
-            // 免責事項も表示
-            if (disclaimerContent) {
-                disclaimerContent.classList.add('active');
-                disclaimerContent.style.maxHeight = 'none';
-                disclaimerContent.style.margin = '0 0 15px';
-            }
-        } else {
-            // モバイル表示：すべて閉じる
-            document.querySelectorAll('.accordion-item').forEach(function(item) {
-                item.classList.remove('active');
-                var content = item.querySelector('.accordion-content');
-                if (content) {
                     content.style.maxHeight = '0px';
                     content.style.padding = '0 20px';
                 }
@@ -302,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
         resizeTimer = setTimeout(adjustAccordions, 200);
     });
     
-    // フローティングCTAのスムーススクロール
+    // 🔥 修正: フローティングCTAのスムーススクロール機能を強化
     var floatingButton = document.querySelector('.floating-button');
     if (floatingButton) {
         floatingButton.addEventListener('click', function(e) {
@@ -311,9 +296,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 var target = document.querySelector(href);
                 if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
+                    var headerOffset = 100; // ヘッダーの高さ分オフセット
+                    var elementPosition = target.getBoundingClientRect().top;
+                    var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
                     });
                 }
             }
@@ -321,19 +310,47 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// スムーススクロール機能（smooth-scrollクラス用）
+// 🔥 修正: スムーススクロール機能を強化（smooth-scrollクラス用）
 document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('smooth-scroll')) {
-        e.preventDefault();
-        var href = e.target.getAttribute('href');
+    if (e.target.classList.contains('smooth-scroll') || 
+        e.target.closest('.smooth-scroll') ||
+        e.target.classList.contains('cta-button') ||
+        e.target.closest('.cta-button')) {
+        
+        var element = e.target.classList.contains('smooth-scroll') || e.target.classList.contains('cta-button') ? 
+                      e.target : e.target.closest('.smooth-scroll, .cta-button');
+        
+        var href = element.getAttribute('href');
         if (href && href.startsWith('#')) {
+            e.preventDefault();
             var target = document.querySelector(href);
             if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
+                var headerOffset = 100; // ヘッダーの高さ分オフセット
+                var elementPosition = target.getBoundingClientRect().top;
+                var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
                 });
             }
         }
     }
-});
+}); {
+                    content.style.maxHeight = 'none';
+                    content.style.padding = '0';
+                }
+            });
+            
+            // 免責事項も表示
+            if (disclaimerContent) {
+                disclaimerContent.classList.add('active');
+                disclaimerContent.style.maxHeight = 'none';
+                disclaimerContent.style.margin = '0 0 15px';
+            }
+        } else {
+            // モバイル表示：すべて閉じる
+            document.querySelectorAll('.accordion-item').forEach(function(item) {
+                item.classList.remove('active');
+                var content = item.querySelector('.accordion-content');
+                if (content)

@@ -146,11 +146,21 @@ get_header(); ?>
   text-decoration: none;
   font-weight: bold;
   font-size: 18px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .company-page .tel-link:hover {
   color: #4A90E2;
   text-decoration: underline;
+  transform: translateY(-1px);
+}
+
+.company-page .tel-link i {
+  color: #4A90E2;
+  font-size: 16px;
 }
 
 .company-page .highlight-number {
@@ -349,6 +359,16 @@ get_header(); ?>
   margin-bottom: 5px;
 }
 
+.simple-footer .footer-tel a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.simple-footer .footer-tel a:hover {
+  color: #4A90E2;
+}
+
 .simple-footer .footer-tel i {
   margin-right: 8px;
   color: #4A90E2;
@@ -519,7 +539,10 @@ get_header(); ?>
                         <tr>
                             <th>電話番号</th>
                             <td>
-                                <a href="tel:050-5810-5875" class="tel-link">050-5810-5875</a>
+                                <a href="tel:050-5810-5875" class="tel-link">
+                                    <i class="fas fa-phone-alt"></i>
+                                    050-5810-5875
+                                </a>
                             </td>
                         </tr>
                         <tr>
@@ -592,7 +615,8 @@ get_header(); ?>
             
             <div class="footer-contact">
                 <div class="footer-tel">
-                    <i class="fas fa-phone-alt"></i> 050-5810-5875
+                    <i class="fas fa-phone-alt"></i> 
+                    <a href="tel:050-5810-5875">050-5810-5875</a>
                 </div>
                 <div class="footer-hours">
                     受付時間：9:00〜19:00（年中無休）

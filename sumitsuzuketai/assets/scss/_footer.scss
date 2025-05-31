@@ -73,6 +73,27 @@
         font-size: 24px;
       }
 
+      // 🔥 追加: 電話番号リンクのスタイル
+      a {
+        color: #fff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+
+        &:hover {
+          color: #4A90E2;
+          transform: translateY(-1px);
+        }
+
+        &:focus {
+          outline: 2px solid #4A90E2;
+          outline-offset: 2px;
+          border-radius: 4px;
+        }
+      }
+
       i {
         margin-right: 8px;
         color: #4A90E2;
@@ -269,6 +290,25 @@
         outline: 2px solid #4A90E2;
         outline-offset: 2px;
       }
+
+      // 🔥 追加: 電話番号リンクの特別スタイル
+      &[href^="tel:"] {
+        font-weight: 600;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+
+        &:hover {
+          color: #4A90E2;
+          transform: translateY(-1px);
+        }
+
+        &:before {
+          content: "📞";
+          font-size: 12px;
+        }
+      }
     }
   }
 }
@@ -362,10 +402,18 @@
   right: 15px;
   z-index: 100;
   display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 
   @media (min-width: 769px) {
     bottom: 20px;
     right: 20px;
+  }
+
+  // 🔥 修正: 表示状態の改善
+  &.show {
+    display: block;
+    opacity: 1;
   }
 
   .floating-button {
@@ -392,11 +440,15 @@
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(255, 106, 61, 0.4);
       background-color: #e55a2b; /* darken(#FF6A3D, 10%) の手動計算値 */
+      color: #fff;
+      text-decoration: none;
     }
 
     &:focus {
       outline: 2px solid #fff;
       outline-offset: 2px;
+      color: #fff;
+      text-decoration: none;
     }
 
     i {
@@ -601,6 +653,8 @@
     }
   }
 }
+
+/* 残りのスタイル（省略記号で簡略化）... */
 
 /* デスクトップ表示用のスタイル */
 @media (min-width: 769px) {

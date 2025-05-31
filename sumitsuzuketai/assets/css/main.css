@@ -2461,6 +2461,23 @@ body {
     font-size: 24px;
   }
 }
+.site-footer .footer-contact .footer-tel a {
+  color: #fff;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.site-footer .footer-contact .footer-tel a:hover {
+  color: #4A90E2;
+  transform: translateY(-1px);
+}
+.site-footer .footer-contact .footer-tel a:focus {
+  outline: 2px solid #4A90E2;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 .site-footer .footer-contact .footer-tel i {
   margin-right: 8px;
   color: #4A90E2;
@@ -2644,6 +2661,21 @@ body {
   outline: 2px solid #4A90E2;
   outline-offset: 2px;
 }
+.footer-accordion .accordion-content a[href^="tel:"] {
+  font-weight: 600;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.footer-accordion .accordion-content a[href^="tel:"]:hover {
+  color: #4A90E2;
+  transform: translateY(-1px);
+}
+.footer-accordion .accordion-content a[href^="tel:"]:before {
+  content: "📞";
+  font-size: 12px;
+}
 
 /* フッターボトム部分 */
 .footer-bottom {
@@ -2729,12 +2761,18 @@ body {
   right: 15px;
   z-index: 100;
   display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 @media (min-width: 769px) {
   .floating-cta {
     bottom: 20px;
     right: 20px;
   }
+}
+.floating-cta.show {
+  display: block;
+  opacity: 1;
 }
 .floating-cta .floating-button {
   display: flex;
@@ -2761,10 +2799,14 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(255, 106, 61, 0.4);
   background-color: #e55a2b; /* darken(#FF6A3D, 10%) の手動計算値 */
+  color: #fff;
+  text-decoration: none;
 }
 .floating-cta .floating-button:focus {
   outline: 2px solid #fff;
   outline-offset: 2px;
+  color: #fff;
+  text-decoration: none;
 }
 .floating-cta .floating-button i {
   margin-right: 6px;
@@ -2968,6 +3010,7 @@ body {
   }
 }
 
+/* 残りのスタイル（省略記号で簡略化）... */
 /* デスクトップ表示用のスタイル */
 @media (min-width: 769px) {
   .site-footer {

@@ -207,49 +207,83 @@ document.addEventListener('DOMContentLoaded', function() {
     const formInputs = document.querySelectorAll('#multi-step-form input, #multi-step-form select');
     
     formInputs.forEach(input => {
-        // ローカルストレージから値を復元
-        const savedValue = localStorage.getItem(`form_${input.name}`);
-        if (savedValue) {
-            input.value = savedValue;
+        // ローカルストレージから値を復元（使用可能な場合のみ）
+        try {
+            if (typeof localStorage !== 'undefined') {
+                const savedValue = localStorage.getItem(`form_${input.name}`);
+                if (savedValue) {
+                    input.value = savedValue;
+                }
+            }
+        } catch (e) {
+            console.warn('ローカルストレージが使用できません:', e);
         }
         
         // 入力値の変更を保存
         input.addEventListener('change', function() {
-            localStorage.setItem(`form_${input.name}`, input.value);
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem(`form_${input.name}`, input.value);
+                }
+            } catch (e) {
+                console.warn('ローカルストレージへの保存に失敗:', e);
+            }
         });
     });
     
-    // フローティングサイドバーフォームの追従
+    // 🔥 修正: フローティングCTAの表示制御（重複削除）
     const floatingCta = document.getElementById('floating-cta');
     
     if (floatingCta) {
-        window.addEventListener('scroll', function() {
+        // スクロール時の表示制御
+        function handleFloatingCta() {
             if (window.scrollY > 300) {
                 floatingCta.style.display = 'block';
             } else {
                 floatingCta.style.display = 'none';
             }
+        }
+        
+        // 初期状態設定
+        handleFloatingCta();
+        
+        // スクロール時に実行
+        window.addEventListener('scroll', handleFloatingCta);
+    }
+    
+    // 🔥 修正: CTAボタンのスムーススクロール機能を強化
+    function setupSmoothScroll() {
+        // 査定フォームへのスクロール
+        const ctaLinks = document.querySelectorAll('a[href*="#assessment-form"], .cta-button, .submit-button-link, .floating-button');
+        
+        ctaLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // ハッシュリンクの場合のみスクロール処理
+                if (href && href.includes('#')) {
+                    e.preventDefault();
+                    
+                    const targetId = href.split('#')[1];
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        const headerOffset = 100; // ヘッダーの高さ分オフセット
+                        const elementPosition = targetElement.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                        
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
         });
     }
     
-    // フォーム表示時のアニメーション（スムーズスクロール）
-    const ctaLinks = document.querySelectorAll('a[href*="#assessment-form"]');
-    
-    ctaLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const targetId = this.getAttribute('href').split('#')[1];
-            const targetElement = document.getElementById(targetId);
-            
-            if (targetElement) {
-                window.scrollTo({
-                    top: targetElement.offsetTop - 100,
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
+    // スムーススクロールを初期化
+    setupSmoothScroll();
     
     // 疑似リアルタイム通知ポップアップ
     const notificationNames = ['田中', '佐藤', '鈴木', '高橋', '渡辺', '伊藤', '山本', '中村', '小林', '加藤'];
@@ -361,7 +395,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初回読み込み時に5秒後に一度表示
     setTimeout(showNotification, 5000);
     
-    // スムーズスクロール機能
+    // 🔥 修正: スムーススクロール機能（重複削除し統一）
     const smoothScrollLinks = document.querySelectorAll('.smooth-scroll');
     
     smoothScrollLinks.forEach(link => {

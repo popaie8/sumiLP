@@ -755,7 +755,8 @@ get_header(); ?>
             
             <div class="footer-contact">
                 <div class="footer-tel">
-                    <i class="fas fa-phone-alt"></i> 050-5810-5875
+                    <i class="fas fa-phone-alt"></i> 
+                    <a href="tel:050-5810-5875">050-5810-5875</a>
                 </div>
                 <div class="footer-hours">
                     受付時間：9:00〜19:00（年中無休）

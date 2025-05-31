@@ -11,16 +11,16 @@
     <meta name="format-detection" content="telephone=no">
     
     <!-- SEO最適化のためのメタタグ -->
-    <meta name="description" content="リースバック一括査定サイト「すみつづけ隊」。たった60秒の入力で最大10社から査定結果を取得。平均120%の高値売却を実現し、最安値の家賃で住み続けられます。">
+    <meta name="description" content="リースバック一括査定サイト「住み続け隊」。たった60秒の入力で最大10社から査定結果を取得。平均120%の高値売却を実現し、最安値の家賃で住み続けられます。">
     <meta name="keywords" content="リースバック,一括査定,住み続ける,不動産売却,高値売却,家賃,老後資金,住宅ローン返済,相続税対策">
     
     <!-- OGP設定 -->
-    <meta property="og:title" content="リースバック一括査定｜すみつづけ隊">
+    <meta property="og:title" content="リースバック一括査定｜住み続け隊">
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?php echo home_url(); ?>">
     <meta property="og:image" content="<?php echo get_template_directory_uri(); ?>/assets/images/ogp.jpg">
-    <meta property="og:site_name" content="すみつづけ隊">
-    <meta property="og:description" content="リースバック一括査定サイト「すみつづけ隊」。たった60秒の入力で最大10社から査定結果を取得。平均120%の高値売却を実現し、最安値の家賃で住み続けられます。">
+    <meta property="og:site_name" content="住み続け隊">
+    <meta property="og:description" content="リースバック一括査定サイト「住み続け隊」。たった60秒の入力で最大10社から査定結果を取得。平均120%の高値売却を実現し、最安値の家賃で住み続けられます。">
     
     <!-- favicon -->
     <link rel="icon" href="<?php echo get_template_directory_uri(); ?>/assets/images/favicon.ico">
@@ -36,12 +36,12 @@
     {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "すみつづけ隊",
+        "name": "住み続け隊",
         "url": "<?php echo home_url(); ?>",
         "logo": "<?php echo get_template_directory_uri(); ?>/assets/images/logo.png",
         "contactPoint": {
             "@type": "ContactPoint",
-            "telephone": "0120-XXX-XXX",
+            "telephone": "050-5810-5875",
             "contactType": "customer service",
             "availableLanguage": "Japanese"
         },

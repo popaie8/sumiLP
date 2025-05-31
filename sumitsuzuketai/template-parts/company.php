@@ -464,41 +464,62 @@ get_header(); ?>
     <div class="page-container">
         <div class="page-header">
             <h1 class="page-title">会社概要</h1>
-            <p class="page-subtitle">すみつづけ隊について</p>
+            <p class="page-subtitle">住み続け隊について</p>
         </div>
 
         <div class="company-content">
+            <!-- 企業理念を最初に配置 -->
+            <div class="company-mission">
+                <h2 class="section-title">企業理念</h2>
+                <div class="mission-content">
+                    <blockquote>
+                        人生の重みを背負いながらも、決して諦めない。<br><br>
+                        
+                        家族との思い出が刻まれたその場所で、あなたが生き続けることを私たちは全力で支えます。<br><br>
+                        
+                        リースバックは単なる金融商品ではありません。それは、人生の再出発への希望であり、家族への愛情を形にする手段であり、未来への新たな扉を開く鍵なのです。<br><br>
+                        
+                        私たちは、お客様一人ひとりの物語に寄り添い、最適な選択肢を見つけ出すことで、「住み続ける」という当たり前の幸せを守り抜きます。<br><br>
+                        
+                        <strong>あなたの「今」を大切にし、「未来」に希望を灯す。</strong><br>
+                        それが、住み続け隊の使命です。
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- 会社概要情報 -->
             <div class="company-info-section">
+                <h2 class="section-title">会社情報</h2>
                 <table class="company-table">
                     <tbody>
                         <tr>
                             <th>会社名</th>
-                            <td>株式会社 すみつづけ隊</td>
+                            <td>株式会社クロフネチンタイ管理</td>
                         </tr>
                         <tr>
                             <th>代表者</th>
-                            <td>代表取締役 山田 太郎</td>
+                            <td>代表取締役 黒江 貴裕</td>
                         </tr>
                         <tr>
                             <th>設立</th>
-                            <td><?php echo date('Y', strtotime('2020-04-01')); ?>年4月1日</td>
+                            <td>令和5年7月6日（2023年7月6日）</td>
                         </tr>
                         <tr>
                             <th>資本金</th>
-                            <td>1,000万円</td>
+                            <td>300万円</td>
                         </tr>
                         <tr>
                             <th>所在地</th>
                             <td>
-                                〒100-0001<br>
-                                東京都千代田区千代田1-1-1<br>
-                                千代田ビル5階
+                                〒230-0011<br>
+                                神奈川県横浜市鶴見区上末吉四丁目11番4号<br>
+                                アネックス第一ハイムA棟102
                             </td>
                         </tr>
                         <tr>
                             <th>電話番号</th>
                             <td>
-                                <a href="tel:0120-XXX-XXX" class="tel-link">0120-XXX-XXX</a>
+                                <a href="tel:050-5810-5875" class="tel-link">050-5810-5875</a>
                             </td>
                         </tr>
                         <tr>
@@ -524,45 +545,28 @@ get_header(); ?>
                         </tr>
                         <tr>
                             <th>提携会社数</th>
-                            <td class="highlight-number">50社以上</td>
+                            <td class="highlight-number">200社以上</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
+            <!-- アクセス情報を最後に配置 -->
             <div class="access-section">
                 <h2 class="section-title">
                     <i class="fas fa-map-marker-alt"></i> アクセス
                 </h2>
                 
                 <div class="map-container">
-                    <div class="map-placeholder">
-                        <i class="fas fa-map-marked-alt"></i>
-                        <p>東京都千代田区千代田1-1-1</p>
-                        <small>JR「東京駅」徒歩5分</small>
-                    </div>
-                </div>
-
-                <div class="access-info">
-                    <div class="access-item">
-                        <h3><i class="fas fa-train"></i> 最寄り駅</h3>
-                        <p>JR山手線・中央線「東京駅」徒歩5分</p>
-                    </div>
-                    <div class="access-item">
-                        <h3><i class="fas fa-subway"></i> 地下鉄</h3>
-                        <p>東京メトロ丸ノ内線「東京駅」直結</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="company-mission">
-                <h2 class="section-title">企業理念</h2>
-                <div class="mission-content">
-                    <blockquote>
-                        私たちは、住み慣れた家で住み続けたいというお客様の想いを大切にし、
-                        最適なリースバックサービスをご提案することで、
-                        安心で豊かな暮らしの実現をサポートいたします。
-                    </blockquote>
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d17283.50939876552!2d139.6659718!3d35.529002399999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60185fc0e19d7679%3A0x37e4acf29e1243d3!2z44Ki44ON44OD44Kv44K556ys77yR44OP44Kk44OgQ-ajnw!5e1!3m2!1sja!2sjp!4v1748572404970!5m2!1sja!2sjp" 
+                        width="100%" 
+                        height="400" 
+                        style="border:0; border-radius: 10px;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
                 </div>
             </div>
         </div>
@@ -582,13 +586,13 @@ get_header(); ?>
     <div class="footer-container">
         <div class="footer-content">
             <div class="footer-logo">
-                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/logo-white.png" alt="すみつづけ隊">
+                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/logo-white.png" alt="住み続け隊">
                 <p class="footer-tagline">リースバック一括査定サイト</p>
             </div>
             
             <div class="footer-contact">
                 <div class="footer-tel">
-                    <i class="fas fa-phone-alt"></i> 0120-XXX-XXX
+                    <i class="fas fa-phone-alt"></i> 050-5810-5875
                 </div>
                 <div class="footer-hours">
                     受付時間：9:00〜19:00（年中無休）
@@ -597,7 +601,7 @@ get_header(); ?>
         </div>
 
         <div class="footer-bottom">
-            <p class="copyright">&copy; <?php echo date('Y'); ?> すみつづけ隊 All Rights Reserved.</p>
+            <p class="copyright">&copy; <?php echo date('Y'); ?> 住み続け隊 All Rights Reserved.</p>
         </div>
     </div>
 </footer>

@@ -20,6 +20,116 @@ $labels = [
   'other'              => 'その他',
 ];
 ?>
+
+<style>
+/* パンくずリストのスタイル */
+.breadcrumb-container {
+  background-color: #f8f9fa;
+  padding: 15px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.breadcrumb {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.breadcrumb ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.breadcrumb li {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb li:not(:last-child)::after {
+  content: '>';
+  margin: 0 8px;
+  color: #999;
+  font-size: 12px;
+}
+
+.breadcrumb a {
+  color: #152C5B;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb a:hover {
+  color: #4A90E2;
+  text-decoration: underline;
+}
+
+.breadcrumb .current {
+  color: #999;
+  font-weight: 500;
+}
+
+.breadcrumb .home-icon {
+  color: #4A90E2;
+  margin-right: 5px;
+  font-size: 12px;
+}
+
+/* 戻るボタン */
+.back-to-home {
+  text-align: center;
+  margin: 20px 0 0;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #152C5B;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(21, 44, 91, 0.3);
+  font-size: 14px;
+}
+
+.back-button:hover {
+  background: #4A90E2;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+.back-button i {
+  font-size: 14px;
+}
+</style>
+
+<!-- パンくずリスト -->
+<div class="breadcrumb-container">
+    <nav class="breadcrumb">
+        <ul>
+            <li>
+                <a href="<?php echo home_url(); ?>">
+                    <i class="fas fa-home home-icon"></i>ホーム
+                </a>
+            </li>
+            <li>
+                <span class="current">無料査定フォーム</span>
+            </li>
+        </ul>
+    </nav>
+</div>
+
 <section class="lead-form">
   <div class="container">
     <div class="form-wrapper">
@@ -46,6 +156,7 @@ $labels = [
         </div>
       </div>
 
+      <!-- 🔥 修正: action属性を明示的に設定 -->
       <form action="<?= esc_url( admin_url( 'admin-post.php' ) ); ?>"
             method="post" class="js-detail-form" id="detailForm">
 
@@ -54,6 +165,7 @@ $labels = [
         <input type="hidden" name="zip" value="<?= esc_attr( $zip ); ?>">
         <input type="hidden" name="property-type" value="<?= esc_attr( $type ); ?>" id="propertyType">
         <input type="hidden" name="inq_type" value="51">
+        <?php wp_nonce_field( 'lead_form_nonce', 'nonce' ); ?>
 
         <!-- Step 1: 物件所在地 -->
         <div class="step-content active" data-step="1">
@@ -101,7 +213,7 @@ $labels = [
               </div>
               <div class="form-group">
                 <label>番地・号・建物名・部屋番号 <span class="req">必須</span></label>
-                <input type="text" name="banchi" placeholder="例）5-10-3 ○○マンション101" required>
+                <input type="text" name="banchi" placeholder="例）10-3 ○○マンション101" required>
               </div>
             </div>
           </fieldset>
@@ -166,7 +278,27 @@ $labels = [
           <button type="submit" class="btn btn-submit" id="submitBtn" style="display: none;">無料査定を依頼する</button>
         </div>
       </form>
+
+      <!-- 戻るボタン -->
+      <div class="back-to-home">
+          <a href="<?php echo home_url(); ?>" class="back-button">
+              <i class="fas fa-arrow-left"></i>
+              ホームに戻る
+          </a>
+      </div>
     </div>
   </div>
 </section>
+
+<!-- 🔥 デバッグ用スクリプト追加 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('detailForm');
+  if (form) {
+    console.log('フォームaction属性:', form.getAttribute('action'));
+    console.log('leadFormAjax:', window.leadFormAjax);
+  }
+});
+</script>
+
 <?php get_footer(); ?>

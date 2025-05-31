@@ -24,8 +24,8 @@ get_header();
                     <?php if (get_theme_mod('sumitsuzuketai_phone')) : ?>
                         <div class="error-contact">
                             <p>リースバックについてのご質問は、お電話でもお問い合わせいただけます：</p>
-                            <a href="tel:<?php echo esc_attr(get_theme_mod('sumitsuzuketai_phone', '0120-XXX-XXX')); ?>" class="phone-link">
-                                <i class="fas fa-phone-alt"></i> <?php echo esc_html(get_theme_mod('sumitsuzuketai_phone', '0120-XXX-XXX')); ?>
+                            <a href="tel:<?php echo esc_attr(get_theme_mod('sumitsuzuketai_phone', '050-5810-5875')); ?>" class="phone-link">
+                                <i class="fas fa-phone-alt"></i> <?php echo esc_html(get_theme_mod('sumitsuzuketai_phone', '050-5810-5875')); ?>
                             </a>
                         </div>
                     <?php endif; ?>

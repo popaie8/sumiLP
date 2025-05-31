@@ -8,7 +8,7 @@
 
             <div class="footer-contact">
                 <div class="footer-tel">
-                    <i class="fas fa-phone-alt"></i> 0120-XXX-XXX
+                    <i class="fas fa-phone-alt"></i> 050-5810-5875
                 </div>
                 <div class="footer-hours">
                     <span>受付時間：9:00〜19:00（年中無休）</span>
@@ -72,7 +72,7 @@
             </div>
 
             <div class="copyright">
-                <p>&copy; <?php echo date('Y'); ?> すみつづけ隊 All Rights Reserved.</p>
+                <p>&copy; <?php echo date('Y'); ?> 住み続け隊 All Rights Reserved.</p>
             </div>
         </div>
     </div>

@@ -1,6 +1,6 @@
 <?php
 /**
- * すみつづけ隊テーマのカスタマイザー設定
+ * 住み続け隊テーマのカスタマイザー設定
  */
 
 if (!defined('ABSPATH')) {
@@ -19,7 +19,7 @@ function sumitsuzuketai_customize_register($wp_customize) {
     
     // 電話番号設定
     $wp_customize->add_setting('sumitsuzuketai_phone', array(
-        'default'           => '0120-XXX-XXX',
+        'default'           => '050-5810-5875',
         'sanitize_callback' => 'sanitize_text_field',
     ));
     

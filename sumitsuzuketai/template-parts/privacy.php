@@ -554,7 +554,7 @@ get_header(); ?>
 
             <div class="intro-section">
                 <p class="intro-text">
-                    <strong>株式会社すみつづけ隊</strong>（以下「当社」といいます。）は、当社が運営するリースバック一括査定サイト（以下「本サイト」といいます。）において取得する個人情報を、<strong>「個人情報の保護に関する法律」および関連ガイドライン</strong>その他の法令を遵守し、以下のとおり適切に取扱います。
+                    <strong>株式会社クロフネチンタイ管理（サイト名：住み続け隊）</strong>（以下「当社」といいます。）は、当社が運営するリースバック一括査定サイト（以下「本サイト」といいます。）において取得する個人情報を、<strong>「個人情報の保護に関する法律」および関連ガイドライン</strong>その他の法令を遵守し、以下のとおり適切に取扱います。
                 </p>
             </div>
 
@@ -647,7 +647,7 @@ get_header(); ?>
 
                 <h3>4-2. 共同利用</h3>
                 <ul class="policy-list">
-                    <li><strong>共同利用者：</strong>提携不動産会社（最大50社）</li>
+                    <li><strong>共同利用者：</strong>提携不動産会社（最大200社）</li>
                     <li><strong>共同利用目的：</strong>査定額算出、取引条件の提示</li>
                     <li><strong>共同利用項目：</strong>氏名、連絡先、物件情報、希望条件</li>
                     <li><strong>管理責任者：</strong>当社</li>
@@ -702,34 +702,34 @@ get_header(); ?>
                     <i class="fas fa-phone-alt"></i> 個人情報相談窓口
                 </h2>
                 <div class="contact-info">
-                    <p class="company-name">株式会社すみつづけ隊</p>
+                    <p class="company-name">株式会社クロフネチンタイ管理（住み続け隊）</p>
                     <div class="contact-details">
                         <div class="contact-item">
                             <i class="fas fa-user"></i>
-                            <span><strong>個人情報保護管理責任者：</strong>山田 太郎</span>
+                            <span><strong>個人情報保護管理責任者：</strong>黒江 貴裕</span>
                         </div>
                         <div class="contact-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span>〒100-0001 東京都千代田区千代田1-1-1 千代田ビル5階</span>
+                            <span>〒230-0011 神奈川県横浜市鶴見区上末吉四丁目11番4号 アネックス第一ハイムA棟102</span>
                         </div>
                         <div class="contact-item">
                             <i class="fas fa-phone"></i>
-                            <span><a href="tel:0120-XXX-XXX">0120-XXX-XXX</a>（平日 10:00〜17:00）</span>
+                            <span><a href="tel:050-5810-5875">050-5810-5875</a></span>
                         </div>
                         <div class="contact-item">
                             <i class="fas fa-clock"></i>
-                            <span>受付時間：平日 10:00〜17:00（土日祝除く）</span>
+                            <span>受付時間：9:00〜19:00（年中無休）</span>
                         </div>
                         <div class="contact-item">
                             <i class="fas fa-envelope"></i>
-                            <span><a href="mailto:privacy@sumitsuzuke-tai.com">privacy@sumitsuzuke-tai.com</a></span>
+                            <span><a href="mailto:info@sumitsudzuke-tai.jp">info@sumitsudzuke-tai.jp</a></span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
-                <p><strong>制定：</strong>2020年4月1日</p>
+                <p><strong>制定：</strong>2023年7月6日</p>
                 <p><strong>改定：</strong><?php echo date('Y年n月j日'); ?></p>
             </div>
         </div>
@@ -749,13 +749,13 @@ get_header(); ?>
     <div class="footer-container">
         <div class="footer-content">
             <div class="footer-logo">
-                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/logo-white.png" alt="すみつづけ隊">
+                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/logo-white.png" alt="住み続け隊">
                 <p class="footer-tagline">リースバック一括査定サイト</p>
             </div>
             
             <div class="footer-contact">
                 <div class="footer-tel">
-                    <i class="fas fa-phone-alt"></i> 0120-XXX-XXX
+                    <i class="fas fa-phone-alt"></i> 050-5810-5875
                 </div>
                 <div class="footer-hours">
                     受付時間：9:00〜19:00（年中無休）
@@ -764,7 +764,7 @@ get_header(); ?>
         </div>
 
         <div class="footer-bottom">
-            <p class="copyright">&copy; <?php echo date('Y'); ?> すみつづけ隊 All Rights Reserved.</p>
+            <p class="copyright">&copy; <?php echo date('Y'); ?> 住み続け隊 All Rights Reserved.</p>
         </div>
     </div>
 </footer>

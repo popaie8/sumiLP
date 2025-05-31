@@ -350,12 +350,13 @@ get_header(); ?>
   font-size: 16px;
 }
 
-/* 専用フッター */
+/* 専用フッター（簡易リンク追加） */
 .simple-footer {
   background-color: #152C5B;
   color: #fff;
-  padding: 30px 0 15px;
+  padding: 30px 0 20px;
   margin-top: 40px;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
 }
 
 .simple-footer .footer-container {
@@ -368,7 +369,7 @@ get_header(); ?>
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .simple-footer .footer-logo img {
@@ -393,6 +394,16 @@ get_header(); ?>
   margin-bottom: 5px;
 }
 
+.simple-footer .footer-tel a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.simple-footer .footer-tel a:hover {
+  color: #4A90E2;
+}
+
 .simple-footer .footer-tel i {
   margin-right: 8px;
   color: #4A90E2;
@@ -403,10 +414,42 @@ get_header(); ?>
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* 簡易リンクセクション */
+.simple-footer .footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.simple-footer .footer-links a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.simple-footer .footer-links a:hover {
+  color: #4A90E2;
+  text-decoration: underline;
+  transform: translateY(-1px);
+}
+
+.simple-footer .footer-links a i {
+  font-size: 12px;
+  color: #4A90E2;
+}
+
 .simple-footer .footer-bottom {
   text-align: center;
   padding-top: 15px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .simple-footer .copyright {
@@ -520,6 +563,27 @@ get_header(); ?>
   
   .simple-footer .footer-logo img {
     max-width: 120px;
+  }
+  
+  .simple-footer .footer-links {
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .simple-footer .footer-links a {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .simple-footer .footer-links {
+    gap: 12px;
+  }
+  
+  .simple-footer .footer-links a {
+    font-size: 12px;
+    gap: 4px;
   }
 }
 </style>
@@ -744,7 +808,7 @@ get_header(); ?>
     </div>
 </main>
 
-<!-- 専用フッター -->
+<!-- 専用フッター（簡易リンク追加版） -->
 <footer class="simple-footer">
     <div class="footer-container">
         <div class="footer-content">
@@ -762,6 +826,22 @@ get_header(); ?>
                     受付時間：9:00〜19:00（年中無休）
                 </div>
             </div>
+        </div>
+
+        <!-- 簡易リンクセクション -->
+        <div class="footer-links">
+            <a href="<?php echo home_url(); ?>">
+                <i class="fas fa-home"></i>ホーム
+            </a>
+            <a href="<?php echo home_url('/company/'); ?>">
+                <i class="fas fa-building"></i>会社概要
+            </a>
+            <a href="<?php echo home_url('/privacy/'); ?>">
+                <i class="fas fa-shield-alt"></i>プライバシーポリシー
+            </a>
+            <a href="<?php echo home_url('/terms/'); ?>">
+                <i class="fas fa-file-contract"></i>利用規約
+            </a>
         </div>
 
         <div class="footer-bottom">

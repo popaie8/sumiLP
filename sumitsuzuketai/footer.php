@@ -8,7 +8,8 @@
 
             <div class="footer-contact">
                 <div class="footer-tel">
-                    <i class="fas fa-phone-alt"></i> 050-5810-5875
+                    <i class="fas fa-phone-alt"></i> 
+                    <a href="tel:05058105875" class="tel-link">050-5810-5875</a>
                 </div>
                 <div class="footer-hours">
                     <span>受付時間：9:00〜19:00（年中無休）</span>
@@ -57,6 +58,7 @@
                     <ul>
                         <li><a href="<?php echo home_url('/company/'); ?>" target="_blank">会社概要</a></li>
                         <li><a href="<?php echo home_url('/privacy/'); ?>" target="_blank">プライバシーポリシー</a></li>
+                        <li><a href="<?php echo home_url('/terms/'); ?>" target="_blank">利用規約</a></li>
                     </ul>
                 </div>
             </div>
@@ -79,369 +81,401 @@
 </footer>
 
 <!-- フローティングCTA -->
-<div class="floating-cta" id="floating-cta">
-    <a href="#assessment-form" class="smooth-scroll floating-button">
+<div class="floating-cta" id="floating-cta" style="display: none; opacity: 0;">
+    <a href="#assessment-form" class="smooth-scroll floating-button" id="floating-button">
         <i class="fas fa-calculator"></i> 無料査定をスタートする
     </a>
 </div>
 
-<!-- 退出意図ポップアップ -->
-<div class="exit-intent-popup" id="exit-intent-popup">
-    <div class="popup-content">
-        <div class="popup-close" id="popup-close">
-            <i class="fas fa-times"></i>
-        </div>
-        <h3 class="popup-title">このページを離れようとしています</h3>
-        <p class="popup-subtitle">査定額を確認する最後のチャンスです！</p>
-        <div class="popup-form">
-            <input type="text" id="popup-zipcode" placeholder="郵便番号（例：123-4567）" class="popup-input" maxlength="8">
-            <button class="popup-button" id="popup-start-button">査定をスタート</button>
-        </div>
-        <p class="popup-note">※入力は60秒で完了します。完全無料です。</p>
-    </div>
-</div>
-
-<!-- フッター用JavaScript -->
+<!-- 🔥 完全動作版JavaScript（最終版） -->
 <script>
-// フッターアコーディオン機能
-document.addEventListener('DOMContentLoaded', function() {
-    // アコーディオンヘッダーのクリックイベント
-    var accordionHeaders = document.querySelectorAll('.accordion-header');
+(function() {
+    'use strict';
     
-    accordionHeaders.forEach(function(header) {
-        header.addEventListener('click', function() {
-            var item = this.parentElement;
-            var isActive = item.classList.contains('active');
-            var content = this.nextElementSibling;
-            
-            // 他のアクティブなアイテムを閉じる
-            document.querySelectorAll('.accordion-item').forEach(function(otherItem) {
-                if (otherItem !== item && otherItem.classList.contains('active')) {
-                    otherItem.classList.remove('active');
-                    var otherContent = otherItem.querySelector('.accordion-content');
-                    otherContent.style.maxHeight = '0px';
-                    otherContent.style.padding = '0 20px';
-                }
+    console.log('🚀 完全版フッタースクリプト開始');
+    
+    // 🔥 STEP 1: 完璧なスムーススクロール関数
+    function perfectSmoothScroll(targetSelector) {
+        console.log('📍 スクロール要求:', targetSelector);
+        
+        // 空のハッシュや無効なハッシュを除外
+        if (!targetSelector || targetSelector === '#' || targetSelector === '#top' || targetSelector === '') {
+            console.warn('⚠️ 無効なターゲット:', targetSelector);
+            return false;
+        }
+        
+        // ターゲット要素を検索
+        var target = document.querySelector(targetSelector);
+        if (!target) {
+            console.warn('⚠️ ターゲット要素が見つかりません:', targetSelector);
+            return false;
+        }
+        
+        console.log('✅ ターゲット要素発見:', target);
+        
+        // スクロール位置計算
+        var headerOffset = 100; // ヘッダー分のオフセット
+        var elementPosition = target.getBoundingClientRect().top;
+        var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        
+        console.log('📏 スクロール計算:', {
+            elementPosition: elementPosition,
+            pageYOffset: window.pageYOffset,
+            offsetPosition: offsetPosition
+        });
+        
+        // 複数の方法でスムーススクロール実行
+        try {
+            // 方法1: ネイティブスムーススクロール
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
             });
             
-            // クリックしたアイテムの状態を切り替え
-            if (isActive) {
-                item.classList.remove('active');
-                content.style.maxHeight = '0px';
-                content.style.padding = '0 20px';
-            } else {
-                item.classList.add('active');
-                content.style.maxHeight = content.scrollHeight + 'px';
-                content.style.padding = '0 20px 15px';
+            // 方法2: jQueryフォールバック
+            if (typeof jQuery !== 'undefined') {
+                jQuery('html, body').animate({
+                    scrollTop: offsetPosition
+                }, 800);
             }
-        });
-    });
-    
-    // 免責事項トグルのクリックイベント
-    var disclaimerToggle = document.getElementById('disclaimer-toggle');
-    var disclaimerContent = document.getElementById('disclaimer-content');
-    
-    if (disclaimerToggle && disclaimerContent) {
-        disclaimerToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            var isActive = disclaimerContent.classList.contains('active');
             
-            if (isActive) {
-                disclaimerContent.classList.remove('active');
-                disclaimerContent.style.maxHeight = '0px';
-                disclaimerContent.style.margin = '0';
-                this.textContent = '免責事項を表示';
-            } else {
-                disclaimerContent.classList.add('active');
-                disclaimerContent.style.maxHeight = disclaimerContent.scrollHeight + 'px';
-                disclaimerContent.style.margin = '0 0 15px';
-                this.textContent = '免責事項を隠す';
-            }
-        });
-    }
-    
-    // 退出意図ポップアップの機能
-    var exitIntentPopup = document.getElementById('exit-intent-popup');
-    var popupClose = document.getElementById('popup-close');
-    var popupStartButton = document.getElementById('popup-start-button');
-    var popupZipcode = document.getElementById('popup-zipcode');
-    var hasShownPopup = false;
-    
-    // マウスが画面上部に移動した時にポップアップを表示
-    document.addEventListener('mouseleave', function(e) {
-        if (e.clientY < 0 && !hasShownPopup) {
-            showExitIntentPopup();
-        }
-    });
-    
-    // モバイル用：スクロールアップ検知
-    var lastScrollTop = 0;
-    var scrollUpCount = 0;
-    
-    window.addEventListener('scroll', function() {
-        var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
-        // 上にスクロールした場合
-        if (scrollTop < lastScrollTop && scrollTop < 100) {
-            scrollUpCount++;
-            // 3回連続で上スクロールした場合にポップアップ表示
-            if (scrollUpCount >= 3 && !hasShownPopup) {
-                setTimeout(function() {
-                    if (!hasShownPopup) {
-                        showExitIntentPopup();
-                    }
-                }, 1000);
-            }
-        } else {
-            scrollUpCount = 0;
-        }
-        
-        lastScrollTop = scrollTop;
-        
-        // フローティングCTAの表示制御
-        var floatingCta = document.getElementById('floating-cta');
-        if (floatingCta) {
-            if (scrollTop > 300) {
-                floatingCta.style.display = 'block';
-            } else {
-                floatingCta.style.display = 'none';
-            }
-        }
-    });
-    
-    function showExitIntentPopup() {
-        if (!hasShownPopup && exitIntentPopup) {
-            exitIntentPopup.style.display = 'block';
-            setTimeout(function() {
-                exitIntentPopup.classList.add('show');
-            }, 10);
-            hasShownPopup = true;
-        }
-    }
-    
-    function hideExitIntentPopup() {
-        if (exitIntentPopup) {
-            exitIntentPopup.classList.remove('show');
-            setTimeout(function() {
-                exitIntentPopup.style.display = 'none';
-            }, 300);
-        }
-    }
-    
-    // ポップアップを閉じる
-    if (popupClose) {
-        popupClose.addEventListener('click', hideExitIntentPopup);
-    }
-    
-    // ポップアップ外をクリックで閉じる
-    if (exitIntentPopup) {
-        exitIntentPopup.addEventListener('click', function(e) {
-            if (e.target === exitIntentPopup) {
-                hideExitIntentPopup();
-            }
-        });
-    }
-    
-    // 郵便番号の入力フォーマット（日本の郵便番号形式）
-    if (popupZipcode) {
-        popupZipcode.addEventListener('input', function(e) {
-            var value = e.target.value.replace(/[^\d]/g, '');
-            if (value.length > 3) {
-                value = value.slice(0, 3) + '-' + value.slice(3, 7);
-            }
-            e.target.value = value;
-        });
-        
-        // Enterキーで査定開始
-        popupZipcode.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                startAssessmentFromPopup();
-            }
-        });
-    }
-    
-    // 査定開始ボタンのクリック
-    if (popupStartButton) {
-        popupStartButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            startAssessmentFromPopup();
-        });
-    }
-    
-    function startAssessmentFromPopup() {
-        var zipcode = popupZipcode ? popupZipcode.value.trim() : '';
-        
-        if (!zipcode) {
-            alert('郵便番号を入力してください');
-            if (popupZipcode) popupZipcode.focus();
-            return;
-        }
-        
-        // 郵便番号の形式チェック（簡易版）
-        var zipcodePattern = /^\d{3}-?\d{4}$/;
-        if (!zipcodePattern.test(zipcode)) {
-            alert('正しい郵便番号を入力してください（例：123-4567）');
-            if (popupZipcode) popupZipcode.focus();
-            return;
-        }
-        
-        // ハイフンを追加（ない場合）
-        if (zipcode.length === 7 && zipcode.indexOf('-') === -1) {
-            zipcode = zipcode.slice(0, 3) + '-' + zipcode.slice(3);
-        }
-        
-        // メインフォームに郵便番号を反映
-        var mainZipcodeFields = [
-            document.querySelector('#assessment-form input[name="zipcode"]'),
-            document.querySelector('#assessment-form input[placeholder*="郵便番号"]'),
-            document.querySelector('input[name="postal_code"]'),
-            document.querySelector('input[id*="zipcode"]'),
-            document.querySelector('input[id*="postal"]')
-        ];
-        
-        var targetField = null;
-        for (var i = 0; i < mainZipcodeFields.length; i++) {
-            if (mainZipcodeFields[i]) {
-                targetField = mainZipcodeFields[i];
-                break;
-            }
-        }
-        
-        if (targetField) {
-            targetField.value = zipcode;
+            console.log('✅ スクロール実行成功:', targetSelector);
+            return true;
             
-            // 視覚的なハイライト効果
-            targetField.style.backgroundColor = '#fff3cd';
-            targetField.style.transition = 'background-color 0.3s ease';
-            
-            setTimeout(function() {
-                targetField.style.backgroundColor = '';
-            }, 2000);
-            
-            // フォーカスを当てる
-            setTimeout(function() {
-                targetField.focus();
-                targetField.scrollIntoView({ 
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }, 300);
-        }
-        
-        // ポップアップを閉じる
-        hideExitIntentPopup();
-        
-        // 査定フォームまでスムーススクロール
-        var assessmentForm = document.getElementById('assessment-form') || 
-                           document.querySelector('.assessment-form') ||
-                           document.querySelector('form');
-        
-        if (assessmentForm) {
-            setTimeout(function() {
-                assessmentForm.scrollIntoView({ 
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }, 500);
-        }
-        
-        // Google Analytics イベント送信（もしGAが設定されている場合）
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'popup_form_submit', {
-                'event_category': 'engagement',
-                'event_label': 'exit_intent_popup'
-            });
+        } catch (error) {
+            console.error('❌ スクロールエラー:', error);
+            return false;
         }
     }
     
-    // ページ読み込み時にデスクトップとモバイル表示を調整
-    function adjustAccordions() {
-        if (window.innerWidth >= 769) {
-            // デスクトップ表示：すべて開く
-            document.querySelectorAll('.accordion-item').forEach(function(item) {
-                item.classList.add('active');
-                var content = item.querySelector('.accordion-content');
-                if (content) {
-                    content.style.maxHeight = 'none';
-                    content.style.padding = '0';
-                }
-            });
+    // 🔥 STEP 2: 統一スクロールイベントハンドラー
+    function createScrollHandler(element) {
+        return function(e) {
+            var href = element.getAttribute('href');
             
-            // 免責事項も表示
-            if (disclaimerContent) {
-                disclaimerContent.classList.add('active');
-                disclaimerContent.style.maxHeight = 'none';
-                disclaimerContent.style.margin = '0 0 15px';
-            }
-        } else {
-            // モバイル表示：すべて閉じる
-            document.querySelectorAll('.accordion-item').forEach(function(item) {
-                item.classList.remove('active');
-                var content = item.querySelector('.accordion-content');
-                if (content) {
-                    content.style.maxHeight = '0px';
-                    content.style.padding = '0 20px';
-                }
-            });
-            
-            // 免責事項も閉じる
-            if (disclaimerContent) {
-                disclaimerContent.classList.remove('active');
-                disclaimerContent.style.maxHeight = '0px';
-                disclaimerContent.style.margin = '0';
-                if (disclaimerToggle) {
-                    disclaimerToggle.textContent = '免責事項を表示';
-                }
-            }
-        }
-    }
-    
-    // 初期化実行
-    adjustAccordions();
-    
-    // リサイズ時の処理（デバウンス付き）
-    var resizeTimer;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(adjustAccordions, 200);
-    });
-    
-    // フローティングCTAのスムーススクロール
-    var floatingButton = document.querySelector('.floating-button');
-    if (floatingButton) {
-        floatingButton.addEventListener('click', function(e) {
-            var href = this.getAttribute('href');
+            // ハッシュリンクのみ処理
             if (href && href.startsWith('#')) {
                 e.preventDefault();
-                var target = document.querySelector(href);
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                console.log('🔗 スムーススクロールクリック:', href);
+                
+                // 少し遅延して確実に実行
+                setTimeout(function() {
+                    perfectSmoothScroll(href);
+                }, 50);
+                
+                return false;
+            }
+        };
+    }
+    
+    // 🔥 STEP 3: DOMContentLoaded での初期化
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔄 DOM読み込み完了 - 初期化開始');
+        
+        // 少し遅延して確実に要素が存在する状態で実行
+        setTimeout(function() {
+            initializeScrolling();
+        }, 300);
+        
+        setTimeout(function() {
+            initializeFloatingCTA();
+        }, 600);
+        
+        setTimeout(function() {
+            initializeAccordions();
+        }, 900);
+    });
+    
+    // 🔥 STEP 4: スクロール機能初期化
+    function initializeScrolling() {
+        console.log('📜 スクロール機能初期化開始');
+        
+        // すべてのスムーススクロール対象セレクタ
+        var smoothScrollSelectors = [
+            '.smooth-scroll',
+            '.cta-button',
+            '.floating-button',
+            '.submit-button-link',
+            '.btn-cta',
+            'a[href^="#assessment-form"]',
+            'a[href^="#about-leaseback"]',
+            'a[href^="#assessment-flow"]',
+            'a[href^="#partner-companies"]',
+            'a[href^="#faq-section"]',
+            'a[href^="#what-is-leaseback"]',
+            'a[href^="#benefits-section"]',
+            'a[href^="#success-cases"]',
+            'a[href^="#market-info"]',
+            'a[href^="#hero-section"]',
+            'a[href^="#features-section"]'
+        ];
+        
+        var totalElements = 0;
+        
+        smoothScrollSelectors.forEach(function(selector) {
+            var elements = document.querySelectorAll(selector);
+            
+            elements.forEach(function(element) {
+                // 既存のイベントを削除
+                var newElement = element.cloneNode(true);
+                element.parentNode.replaceChild(newElement, element);
+                
+                // 新しいイベントハンドラーを追加
+                var handler = createScrollHandler(newElement);
+                
+                // 複数のイベントで確実にキャッチ
+                newElement.addEventListener('click', handler, true);
+                newElement.addEventListener('mousedown', handler, true);
+                newElement.addEventListener('touchstart', handler, { passive: false });
+                
+                totalElements++;
+            });
+            
+            if (elements.length > 0) {
+                console.log('✅ スクロール設定完了:', selector, '(' + elements.length + '個)');
             }
         });
+        
+        console.log('🎯 全スクロール要素設定完了 - 合計:', totalElements + '個');
     }
-});
-
-// スムーススクロール機能（smooth-scrollクラス用）
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('smooth-scroll')) {
-        e.preventDefault();
-        var href = e.target.getAttribute('href');
-        if (href && href.startsWith('#')) {
-            var target = document.querySelector(href);
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+    
+    // 🔥 STEP 5: フローティングCTA初期化
+    function initializeFloatingCTA() {
+        console.log('🎈 フローティングCTA初期化開始');
+        
+        var floatingCta = document.getElementById('floating-cta');
+        var floatingButton = document.getElementById('floating-button');
+        
+        if (!floatingCta || !floatingButton) {
+            console.warn('⚠️ フローティングCTA要素が見つかりません');
+            return;
+        }
+        
+        // 表示制御関数
+        function handleFloatingDisplay() {
+            var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > 300) {
+                floatingCta.style.display = 'block';
+                floatingCta.style.opacity = '1';
+                floatingCta.style.visibility = 'visible';
+            } else {
+                floatingCta.style.display = 'none';
+                floatingCta.style.opacity = '0';
+                floatingCta.style.visibility = 'hidden';
             }
         }
+        
+        // スクロールイベント
+        window.addEventListener('scroll', handleFloatingDisplay);
+        handleFloatingDisplay(); // 初期状態設定
+        
+        // フローティングボタンのクリック処理
+        var newFloatingButton = floatingButton.cloneNode(true);
+        floatingButton.parentNode.replaceChild(newFloatingButton, floatingButton);
+        
+        var floatingHandler = createScrollHandler(newFloatingButton);
+        newFloatingButton.addEventListener('click', floatingHandler, true);
+        newFloatingButton.addEventListener('touchstart', floatingHandler, { passive: false });
+        
+        console.log('✅ フローティングCTA設定完了');
     }
-});
+    
+    // 🔥 STEP 6: アコーディオン機能初期化
+    function initializeAccordions() {
+        console.log('🎵 アコーディオン機能初期化開始');
+        
+        // アコーディオンヘッダーイベント
+        var accordionHeaders = document.querySelectorAll('.accordion-header');
+        accordionHeaders.forEach(function(header) {
+            header.addEventListener('click', function() {
+                var item = this.parentElement;
+                var isActive = item.classList.contains('active');
+                var content = this.nextElementSibling;
+                
+                // 他のアクティブなアイテムを閉じる
+                document.querySelectorAll('.accordion-item').forEach(function(otherItem) {
+                    if (otherItem !== item && otherItem.classList.contains('active')) {
+                        otherItem.classList.remove('active');
+                        var otherContent = otherItem.querySelector('.accordion-content');
+                        otherContent.style.maxHeight = '0px';
+                        otherContent.style.padding = '0 20px';
+                    }
+                });
+                
+                // クリックしたアイテムの状態を切り替え
+                if (isActive) {
+                    item.classList.remove('active');
+                    content.style.maxHeight = '0px';
+                    content.style.padding = '0 20px';
+                } else {
+                    item.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    content.style.padding = '0 20px 15px';
+                }
+            });
+        });
+        
+        // 免責事項トグル
+        var disclaimerToggle = document.getElementById('disclaimer-toggle');
+        var disclaimerContent = document.getElementById('disclaimer-content');
+        
+        if (disclaimerToggle && disclaimerContent) {
+            disclaimerToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                var isActive = disclaimerContent.classList.contains('active');
+                
+                if (isActive) {
+                    disclaimerContent.classList.remove('active');
+                    disclaimerContent.style.maxHeight = '0px';
+                    disclaimerContent.style.margin = '0';
+                    this.textContent = '免責事項を表示';
+                } else {
+                    disclaimerContent.classList.add('active');
+                    disclaimerContent.style.maxHeight = disclaimerContent.scrollHeight + 'px';
+                    disclaimerContent.style.margin = '0 0 15px';
+                    this.textContent = '免責事項を隠す';
+                }
+            });
+        }
+        
+        // レスポンシブ調整
+        function adjustAccordions() {
+            if (window.innerWidth >= 769) {
+                // デスクトップ：すべて開く
+                document.querySelectorAll('.accordion-item').forEach(function(item) {
+                    item.classList.add('active');
+                    var content = item.querySelector('.accordion-content');
+                    if (content) {
+                        content.style.maxHeight = 'none';
+                        content.style.padding = '0';
+                    }
+                });
+                
+                if (disclaimerContent) {
+                    disclaimerContent.classList.add('active');
+                    disclaimerContent.style.maxHeight = 'none';
+                    disclaimerContent.style.margin = '0 0 15px';
+                }
+            } else {
+                // モバイル：すべて閉じる
+                document.querySelectorAll('.accordion-item').forEach(function(item) {
+                    item.classList.remove('active');
+                    var content = item.querySelector('.accordion-content');
+                    if (content) {
+                        content.style.maxHeight = '0px';
+                        content.style.padding = '0 20px';
+                    }
+                });
+                
+                if (disclaimerContent) {
+                    disclaimerContent.classList.remove('active');
+                    disclaimerContent.style.maxHeight = '0px';
+                    disclaimerContent.style.margin = '0';
+                    if (disclaimerToggle) {
+                        disclaimerToggle.textContent = '免責事項を表示';
+                    }
+                }
+            }
+        }
+        
+        adjustAccordions();
+        
+        var resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(adjustAccordions, 200);
+        });
+        
+        console.log('✅ アコーディオン設定完了');
+    }
+    
+    // 🔥 STEP 7: グローバルフォールバック
+    document.addEventListener('click', function(e) {
+        var target = e.target;
+        var link = null;
+        
+        // クリックされた要素またはその親要素でリンクを探す
+        var maxDepth = 5;
+        var depth = 0;
+        
+        while (target && target !== document && depth < maxDepth) {
+            if (target.tagName === 'A' && target.getAttribute('href')) {
+                link = target;
+                break;
+            }
+            target = target.parentElement;
+            depth++;
+        }
+        
+        if (link) {
+            var href = link.getAttribute('href');
+            
+            if (href && href.startsWith('#') && href !== '#' && href !== '#top') {
+                // まだ処理されていない場合のフォールバック
+                setTimeout(function() {
+                    if (!e.defaultPrevented) {
+                        console.log('🔄 グローバルフォールバック実行:', href);
+                        e.preventDefault();
+                        perfectSmoothScroll(href);
+                    }
+                }, 100);
+            }
+        }
+    }, true);
+    
+    // 🔥 STEP 8: テスト用関数
+    window.testPerfectScrolling = function() {
+        console.log('🧪 完全スクロールテスト開始');
+        
+        var testTargets = [
+            '#assessment-form',
+            '#about-leaseback',
+            '#faq-section',
+            '#benefits-section'
+        ];
+        
+        testTargets.forEach(function(target, index) {
+            setTimeout(function() {
+                console.log('🎯 テスト:', target);
+                perfectSmoothScroll(target);
+            }, index * 3000);
+        });
+        
+        console.log('🎉 テスト完了予定:', (testTargets.length * 3) + '秒後');
+    };
+    
+    // 強制スクロール関数
+    window.forceScroll = function(target) {
+        target = target || '#assessment-form';
+        console.log('💪 強制スクロール:', target);
+        return perfectSmoothScroll(target);
+    };
+    
+    // ページ読み込み完了時の最終チェック
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            console.log('🎊 ページ読み込み完了 - 最終初期化');
+            
+            // 最終的なスクロール設定チェック
+            var scrollElements = document.querySelectorAll('.smooth-scroll, .cta-button, .floating-button');
+            console.log('📊 最終スクロール要素数:', scrollElements.length);
+            
+            // 不足があれば再初期化
+            if (scrollElements.length < 5) {
+                console.log('🔧 再初期化実行');
+                initializeScrolling();
+            }
+        }, 1000);
+    });
+    
+    console.log('🚀 完全版フッタースクリプト読み込み完了');
+    console.log('📋 利用可能な関数: testPerfectScrolling(), forceScroll("#target")');
+    
+})();
 </script>
 
 <?php wp_footer(); ?>

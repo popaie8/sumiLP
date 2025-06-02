@@ -1,5 +1,5 @@
 /**
- * リードフォーム制御（AJAX完全対応版・修正版）
+ * リードフォーム制御（エラー修正版）
  * 住所取得 + ステップフォーム + 入力記憶 + AJAX + モーダル
  */
 
@@ -25,23 +25,35 @@ const utils = {
     return urlParams.get(param);
   },
 
-  // メモリストレージ（sessionStorage の代替）
+  // 🔧 修正版メモリストレージ（エラー対策）
   storage: {
-    data: {},
+    data: {}, // 確実に初期化
     
-    save: (data) => {
+    save: function(data) {
       try {
-        this.data = { ...data };
+        // this.data の確実な初期化
+        if (!this.data) {
+          this.data = {};
+        }
+        
+        this.data = { ...this.data, ...data };
+        
         // sessionStorageが使える場合は併用
         if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
         }
+        
+        console.log('📝 フォームデータ保存成功:', this.data);
       } catch (e) {
         console.warn('フォームデータの保存に失敗:', e);
+        // エラーでもdataは初期化しておく
+        if (!this.data) {
+          this.data = {};
+        }
       }
     },
     
-    load: () => {
+    load: function() {
       try {
         // sessionStorageから復元を試行
         if (typeof sessionStorage !== 'undefined') {
@@ -51,15 +63,20 @@ const utils = {
             return this.data;
           }
         }
+        
         // フォールバック：メモリから返す
-        return this.data || {};
+        if (!this.data) {
+          this.data = {};
+        }
+        return this.data;
       } catch (e) {
         console.warn('フォームデータの復元に失敗:', e);
+        this.data = {};
         return {};
       }
     },
     
-    clear: () => {
+    clear: function() {
       try {
         this.data = {};
         if (typeof sessionStorage !== 'undefined') {
@@ -67,6 +84,7 @@ const utils = {
         }
       } catch (e) {
         console.warn('フォームデータのクリアに失敗:', e);
+        this.data = {};
       }
     }
   },
@@ -245,6 +263,7 @@ class StepFormManager {
     }
   }
 
+  // 🔧 修正版バリデーション（focusableチェック追加）
   validateCurrentStep() {
     const currentStepElement = document.querySelector(`.step-content[data-step="${this.currentStep}"]`);
     if (!currentStepElement) {
@@ -255,12 +274,26 @@ class StepFormManager {
     const requiredFields = currentStepElement.querySelectorAll('[required]');
     
     for (const field of requiredFields) {
+      // 🔧 非表示フィールドのチェックをスキップ
+      if (field.offsetParent === null || field.style.display === 'none') {
+        console.log('非表示フィールドをスキップ:', field.name);
+        continue;
+      }
+      
       const isEmpty = field.type === 'checkbox' ? !field.checked : !field.value?.trim();
       
       if (isEmpty) {
-        field.focus();
-        alert('必須項目を入力してください。');
-        return false;
+        // フォーカス可能かチェック
+        try {
+          field.focus();
+          alert('必須項目を入力してください。');
+          return false;
+        } catch (e) {
+          console.warn('フォーカス不可能なフィールド:', field.name, e);
+          // フォーカス不可能な場合はアラートのみ
+          alert('必須項目を入力してください。');
+          return false;
+        }
       }
     }
     
@@ -459,6 +492,7 @@ class StepFormManager {
     `;
   }
 
+  // 🔧 修正版土地フォーム（requiredを削除）
   generateLandForm() {
     return `
       <div class="form-row">
@@ -619,7 +653,7 @@ class StepFormManager {
   }
 }
 
-// AJAX送信・モーダル管理（修正版）
+// 🔧 修正版AJAX送信・モーダル管理
 const ajaxSubmitter = {
   async submit(event) {
     const { form } = getFormElements();
@@ -636,12 +670,10 @@ const ajaxSubmitter = {
     submitBtn.textContent = '送信中...';
 
     try {
-      // 🔥 修正: フォームのaction属性を正しく取得
+      // フォームのaction属性を正しく取得
       let actionUrl = form.getAttribute('action');
       
-      // フォームのaction属性が正しく設定されているか確認
       if (!actionUrl || actionUrl === '' || actionUrl.includes('[object')) {
-        // WordPressのAJAX URLを使用
         actionUrl = window.leadFormAjax?.ajaxurl || '/wp-admin/admin-post.php';
         console.log('フォームaction修正:', actionUrl);
       }
@@ -842,40 +874,45 @@ document.addEventListener('click', (e) => {
 window.closeThanksModal = () => modalManager.hide();
 window.modalManager = modalManager; // グローバルアクセス用
 
-// 初期化
+// 🔧 修正版初期化
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('リードフォーム初期化開始');
   
-  const { form, propertyTypeInput } = getFormElements();
-  
-  if (!form) {
-    console.error('フォームが見つかりません');
-    return;
-  }
-
-  // 物件種別取得
-  const propertyType = propertyTypeInput?.value || 'mansion-unit';
-  console.log('物件種別:', propertyType);
-
-  // ステップフォーム初期化
-  const stepFormManager = new StepFormManager(propertyType);
-  window.stepFormManager = stepFormManager;
-
-  // データ管理初期化
-  formDataManager.restoreFormData();
-  formDataManager.setupAutoSave();
-
-  // 住所API初期化
-  const zip = utils.getUrlParam('zip') || document.querySelector('input[name="zip"]')?.value;
-  if (zip) {
-    try {
-      const address = await addressApi.fetchAddress(zip);
-      addressApi.updateAddressFields(address);
-      addressApi.initChomeSelect();
-    } catch (error) {
-      console.warn('住所取得に失敗しました:', error);
+  try {
+    const { form, propertyTypeInput } = getFormElements();
+    
+    if (!form) {
+      console.error('フォームが見つかりません');
+      return;
     }
-  }
 
-  console.log('リードフォーム初期化完了');
+    // 物件種別取得
+    const propertyType = propertyTypeInput?.value || 'mansion-unit';
+    console.log('物件種別:', propertyType);
+
+    // ステップフォーム初期化
+    const stepFormManager = new StepFormManager(propertyType);
+    window.stepFormManager = stepFormManager;
+
+    // データ管理初期化
+    formDataManager.restoreFormData();
+    formDataManager.setupAutoSave();
+
+    // 住所API初期化
+    const zip = utils.getUrlParam('zip') || document.querySelector('input[name="zip"]')?.value;
+    if (zip) {
+      try {
+        const address = await addressApi.fetchAddress(zip);
+        addressApi.updateAddressFields(address);
+        addressApi.initChomeSelect();
+      } catch (error) {
+        console.warn('住所取得に失敗しました:', error);
+      }
+    }
+
+    console.log('リードフォーム初期化完了');
+    
+  } catch (error) {
+    console.error('リードフォーム初期化エラー:', error);
+  }
 });

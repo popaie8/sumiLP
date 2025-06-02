@@ -2754,15 +2754,17 @@ body {
   }
 }
 
-/* フローティングCTA */
+/* 🔥 フローティングCTA完全修正版CSS */
 .floating-cta {
   position: fixed;
   bottom: 15px;
   right: 15px;
-  z-index: 100;
-  display: none;
+  z-index: 9999 !important; /* 確実に最前面に */
+  display: none; /* 初期状態は非表示 */
   opacity: 0;
-  transition: opacity 0.3s ease;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 @media (min-width: 769px) {
   .floating-cta {
@@ -2770,53 +2772,164 @@ body {
     right: 20px;
   }
 }
+
+/* 🔥 表示状態のクラス */
 .floating-cta.show {
-  display: block;
-  opacity: 1;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
 }
-.floating-cta .floating-button {
+
+/* 🔥 アニメーション表示用 */
+.floating-cta:not(.show) {
+  transform: translateY(100px);
+}
+
+.floating-cta.show {
+  animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.floating-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #FF6A3D;
-  color: #fff;
+  background: linear-gradient(135deg, #FF6A3D 0%, #FF8C42 100%);
+  color: #fff !important;
   font-size: 14px;
   font-weight: bold;
-  padding: 10px 18px;
+  padding: 12px 20px;
   border-radius: 50px;
-  text-decoration: none;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
-  transition: all 0.3s ease;
+  text-decoration: none !important;
+  box-shadow: 0 4px 20px rgba(255, 106, 61, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+  border: none;
+  cursor: pointer;
 }
 @media (min-width: 769px) {
-  .floating-cta .floating-button {
+  .floating-button {
     font-size: 16px;
-    padding: 15px 20px;
-  }
-}
-.floating-cta .floating-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(255, 106, 61, 0.4);
-  background-color: #e55a2b; /* darken(#FF6A3D, 10%) の手動計算値 */
-  color: #fff;
-  text-decoration: none;
-}
-.floating-cta .floating-button:focus {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-  color: #fff;
-  text-decoration: none;
-}
-.floating-cta .floating-button i {
-  margin-right: 6px;
-}
-@media (min-width: 769px) {
-  .floating-cta .floating-button i {
-    margin-right: 8px;
+    padding: 15px 25px;
+    box-shadow: 0 6px 25px rgba(255, 106, 61, 0.4);
   }
 }
 
+.floating-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(255, 106, 61, 0.6);
+  background: linear-gradient(135deg, #e55a2b 0%, #e6762b 100%);
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+.floating-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 106, 61, 0.5), 0 8px 30px rgba(255, 106, 61, 0.6);
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+.floating-button:active {
+  transform: translateY(-1px);
+}
+
+.floating-button i {
+  margin-right: 8px;
+  font-size: 16px;
+}
+@media (min-width: 769px) {
+  .floating-button i {
+    margin-right: 10px;
+    font-size: 18px;
+  }
+}
+
+/* 🔥 強制表示用のユーティリティクラス */
+.floating-cta-force-show {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* 🔥 レスポンシブ調整 */
+@media (max-width: 480px) {
+  .floating-cta {
+    bottom: 10px;
+    right: 10px;
+  }
+  .floating-button {
+    font-size: 12px;
+    padding: 10px 16px;
+  }
+  .floating-button i {
+    margin-right: 6px;
+    font-size: 14px;
+  }
+}
+/* 🔥 高度なアニメーション */
+.floating-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.floating-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.floating-button:hover::before {
+  left: 100%;
+}
+
+/* 🔥 アクセシビリティ対応 */
+@media (prefers-reduced-motion: reduce) {
+  .floating-cta {
+    animation: none !important;
+    transition: opacity 0.2s ease !important;
+  }
+  .floating-button {
+    transition: background 0.2s ease !important;
+  }
+  .floating-button:hover {
+    transform: none !important;
+  }
+}
+/* 🔥 ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .floating-button {
+    background: linear-gradient(135deg, #FF6A3D 0%, #FF8C42 100%);
+    color: #fff !important;
+  }
+  .floating-button:hover {
+    background: linear-gradient(135deg, #e55a2b 0%, #e6762b 100%);
+    color: #fff !important;
+  }
+}
+/* 🔥 印刷時は非表示 */
+@media print {
+  .floating-cta {
+    display: none !important;
+  }
+}
 /* 退出意図ポップアップ */
 .exit-intent-popup {
   display: none;

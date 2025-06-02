@@ -144,8 +144,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const currentStep = document.getElementById(`form-step-${button.dataset.step - 1}`);
             const nextStep = document.getElementById(`form-step-${button.dataset.step}`);
             
-            currentStep.style.display = 'none';
-            nextStep.style.display = 'block';
+            if (currentStep) currentStep.style.display = 'none';
+            if (nextStep) nextStep.style.display = 'block';
         });
     });
     
@@ -154,8 +154,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const currentStep = document.getElementById(`form-step-${button.dataset.step}`);
             const prevStep = document.getElementById(`form-step-${button.dataset.step - 1}`);
             
-            currentStep.style.display = 'none';
-            prevStep.style.display = 'block';
+            if (currentStep) currentStep.style.display = 'none';
+            if (prevStep) prevStep.style.display = 'block';
         });
     });
     
@@ -165,17 +165,19 @@ document.addEventListener('DOMContentLoaded', function() {
     faqItems.forEach(item => {
         const question = item.querySelector('.faq-question');
         
-        question.addEventListener('click', function() {
-            // 現在開いている質問を閉じる
-            faqItems.forEach(otherItem => {
-                if (otherItem !== item && otherItem.classList.contains('active')) {
-                    otherItem.classList.remove('active');
-                }
+        if (question) {
+            question.addEventListener('click', function() {
+                // 現在開いている質問を閉じる
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item && otherItem.classList.contains('active')) {
+                        otherItem.classList.remove('active');
+                    }
+                });
+                
+                // クリックした質問の状態を切り替え
+                item.classList.toggle('active');
             });
-            
-            // クリックした質問の状態を切り替え
-            item.classList.toggle('active');
-        });
+        }
     });
     
     // 離脱意図検知（Exit Intent）
@@ -203,87 +205,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // フォームの途中経過保存
+    // フォームの途中経過保存（メモリベース）
     const formInputs = document.querySelectorAll('#multi-step-form input, #multi-step-form select');
+    const formData = {}; // メモリ内でデータを保持
     
     formInputs.forEach(input => {
-        // ローカルストレージから値を復元（使用可能な場合のみ）
-        try {
-            if (typeof localStorage !== 'undefined') {
-                const savedValue = localStorage.getItem(`form_${input.name}`);
-                if (savedValue) {
-                    input.value = savedValue;
-                }
-            }
-        } catch (e) {
-            console.warn('ローカルストレージが使用できません:', e);
+        // 保存されたデータがあれば復元
+        if (formData[input.name]) {
+            input.value = formData[input.name];
         }
         
         // 入力値の変更を保存
         input.addEventListener('change', function() {
-            try {
-                if (typeof localStorage !== 'undefined') {
-                    localStorage.setItem(`form_${input.name}`, input.value);
-                }
-            } catch (e) {
-                console.warn('ローカルストレージへの保存に失敗:', e);
-            }
+            formData[input.name] = input.value;
         });
     });
     
-    // 🔥 修正: フローティングCTAの表示制御（重複削除）
-    const floatingCta = document.getElementById('floating-cta');
-    
-    if (floatingCta) {
-        // スクロール時の表示制御
-        function handleFloatingCta() {
-            if (window.scrollY > 300) {
-                floatingCta.style.display = 'block';
-            } else {
-                floatingCta.style.display = 'none';
-            }
-        }
-        
-        // 初期状態設定
-        handleFloatingCta();
-        
-        // スクロール時に実行
-        window.addEventListener('scroll', handleFloatingCta);
-    }
-    
-    // 🔥 修正: CTAボタンのスムーススクロール機能を強化
-    function setupSmoothScroll() {
-        // 査定フォームへのスクロール
-        const ctaLinks = document.querySelectorAll('a[href*="#assessment-form"], .cta-button, .submit-button-link, .floating-button');
-        
-        ctaLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                
-                // ハッシュリンクの場合のみスクロール処理
-                if (href && href.includes('#')) {
-                    e.preventDefault();
-                    
-                    const targetId = href.split('#')[1];
-                    const targetElement = document.getElementById(targetId);
-                    
-                    if (targetElement) {
-                        const headerOffset = 100; // ヘッダーの高さ分オフセット
-                        const elementPosition = targetElement.getBoundingClientRect().top;
-                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                        
-                        window.scrollTo({
-                            top: offsetPosition,
-                            behavior: 'smooth'
-                        });
-                    }
-                }
-            });
-        });
-    }
-    
-    // スムーススクロールを初期化
-    setupSmoothScroll();
+    // 🔥 修正: フローティングCTA表示制御を統合（重複削除）
+    // ※ footer.phpの完全版スクリプトに統合済みのため、こちらは削除
     
     // 疑似リアルタイム通知ポップアップ
     const notificationNames = ['田中', '佐藤', '鈴木', '高橋', '渡辺', '伊藤', '山本', '中村', '小林', '加藤'];
@@ -315,54 +254,72 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         // スタイル設定
-        notification.style.position = 'fixed';
-        notification.style.bottom = '20px';
-        notification.style.left = '20px';
-        notification.style.backgroundColor = '#fff';
-        notification.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.2)';
-        notification.style.borderRadius = '5px';
-        notification.style.padding = '10px 15px';
-        notification.style.display = 'flex';
-        notification.style.alignItems = 'center';
-        notification.style.zIndex = '999';
-        notification.style.animation = 'slideIn 0.5s ease-out';
-        
-        // アニメーションスタイル
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(-100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(-100%); opacity: 0; }
-            }
-            
-            .realtime-notification .notification-icon {
-                margin-right: 10px;
-                font-size: 24px;
-                color: #0066cc;
-            }
-            
-            .realtime-notification .notification-content p {
-                margin: 0;
-                font-size: 14px;
-            }
-            
-            .realtime-notification .notification-close {
-                margin-left: 15px;
-                cursor: pointer;
-                color: #999;
-            }
-            
-            .realtime-notification .notification-close:hover {
-                color: #333;
-            }
+        notification.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #fff;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            z-index: 998;
+            animation: slideIn 0.5s ease-out;
+            max-width: 300px;
         `;
         
-        document.head.appendChild(style);
+        // アニメーションスタイル
+        if (!document.getElementById('notification-style')) {
+            const style = document.createElement('style');
+            style.id = 'notification-style';
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(-100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(-100%); opacity: 0; }
+                }
+                
+                .realtime-notification .notification-icon {
+                    margin-right: 10px;
+                    font-size: 24px;
+                    color: #0066cc;
+                }
+                
+                .realtime-notification .notification-content p {
+                    margin: 0;
+                    font-size: 14px;
+                    line-height: 1.4;
+                }
+                
+                .realtime-notification .notification-close {
+                    margin-left: 15px;
+                    cursor: pointer;
+                    color: #999;
+                    font-size: 12px;
+                }
+                
+                .realtime-notification .notification-close:hover {
+                    color: #333;
+                }
+                
+                @media (max-width: 768px) {
+                    .realtime-notification {
+                        bottom: 80px !important;
+                        left: 10px !important;
+                        right: 10px !important;
+                        max-width: none !important;
+                    }
+                }
+            `;
+            
+            document.head.appendChild(style);
+        }
+        
         document.body.appendChild(notification);
         
         // 閉じるボタンの処理
@@ -370,7 +327,9 @@ document.addEventListener('DOMContentLoaded', function() {
         closeButton.addEventListener('click', function() {
             notification.style.animation = 'slideOut 0.5s ease-out';
             setTimeout(function() {
-                document.body.removeChild(notification);
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
             }, 500);
         });
         
@@ -394,37 +353,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初回読み込み時に5秒後に一度表示
     setTimeout(showNotification, 5000);
-    
-    // 🔥 修正: スムーススクロール機能（重複削除し統一）
-    const smoothScrollLinks = document.querySelectorAll('.smooth-scroll');
-    
-    smoothScrollLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const targetId = this.getAttribute('href');
-            if (!targetId || targetId === '#') return;
-            
-            const targetSection = document.querySelector(targetId);
-            
-            if (targetSection) {
-                const headerOffset = 80;
-                const elementPosition = targetSection.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                
-                window.scrollTo({
-                    top: offsetPosition,
-                    behavior: 'smooth'
-                });
-                
-                // モバイルメニューが開いている場合は閉じる
-                const mobileMenu = document.querySelector('.mobile-menu');
-                if (mobileMenu && mobileMenu.classList.contains('active')) {
-                    mobileMenu.classList.remove('active');
-                }
-            }
-        });
-    });
 });
 
 // jQueryも使用
@@ -437,10 +365,14 @@ jQuery(document).ready(function($) {
         const postalCode = $('#postal-code').val();
         const propertyType = $('#property-type').val();
         
-        // 3ステップフォームへスクロール
-        $('html, body').animate({
-            scrollTop: $('#assessment-form').offset().top - 80
-        }, 500);
+        // 3ステップフォームへスクロール（完全版スクリプトに委任）
+        if (window.forceScroll) {
+            window.forceScroll('#assessment-form');
+        } else {
+            $('html, body').animate({
+                scrollTop: $('#assessment-form').offset().top - 80
+            }, 500);
+        }
         
         // フォームに値を設定
         setTimeout(function() {

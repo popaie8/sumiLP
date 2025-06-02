@@ -93,17 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         lastScrollTop = scrollTop;
         
-        // 🔥 修正: フローティングCTAの表示制御を改善
-        var floatingCta = document.getElementById('floating-cta');
-        if (floatingCta) {
-            if (scrollTop > 300) {
-                floatingCta.style.display = 'block';
-                floatingCta.style.opacity = '1';
-            } else {
-                floatingCta.style.display = 'none';
-                floatingCta.style.opacity = '0';
-            }
-        }
+        
     });
     
     function showExitIntentPopup() {
@@ -287,27 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
         resizeTimer = setTimeout(adjustAccordions, 200);
     });
     
-    // 🔥 修正: フローティングCTAのスムーススクロール機能を強化
-    var floatingButton = document.querySelector('.floating-button');
-    if (floatingButton) {
-        floatingButton.addEventListener('click', function(e) {
-            var href = this.getAttribute('href');
-            if (href && href.startsWith('#')) {
-                e.preventDefault();
-                var target = document.querySelector(href);
-                if (target) {
-                    var headerOffset = 100; // ヘッダーの高さ分オフセット
-                    var elementPosition = target.getBoundingClientRect().top;
-                    var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                    
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: 'smooth'
-                    });
-                }
-            }
-        });
-    }
+    
 });
 
 // 🔥 修正: スムーススクロール機能を強化（smooth-scrollクラス用）

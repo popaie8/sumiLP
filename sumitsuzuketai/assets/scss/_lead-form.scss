@@ -138,6 +138,18 @@
     flex: 1 1 calc(50% - 9px); 
   }
 
+  /* 🔥 3列レイアウト用のスタイル追加 */
+  .three-col {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .three-col > * { 
+    flex: 1 1 calc(33.33% - 8px); 
+    min-width: 0;
+  }
+
   .form-group { 
     flex: 1 1 100%; 
     min-width: 0; 
@@ -328,6 +340,26 @@
       flex: 1 1 100%;
     }
 
+    /* 🔥 3列レイアウトのモバイル対応（横並び維持） */
+    .three-col {
+      gap: 8px;
+    }
+    
+    .three-col > * {
+      flex: 1 1 calc(33.33% - 5px);
+      min-width: 0;
+    }
+
+    .three-col .form-group label {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    
+    .three-col .form-group input {
+      padding: 12px 10px;
+      font-size: 14px;
+    }
+
     .step-label {
       font-size: 10px;
     }
@@ -344,6 +376,28 @@
 
     .layout-rooms, .layout-type {
       min-width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    /* 🔥 最小画面でも3列横並び維持 */
+    .three-col {
+      gap: 6px;
+    }
+    
+    .three-col > * {
+      flex: 1 1 calc(33.33% - 4px);
+      min-width: 0;
+    }
+
+    .three-col .form-group label {
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+    
+    .three-col .form-group input {
+      padding: 10px 8px;
+      font-size: 14px;
     }
   }
 }

@@ -920,7 +920,7 @@ get_header(); ?>
                         </div>
                         <div class="contact-item">
                             <i class="fas fa-envelope"></i>
-                            <span><a href="mailto:info@sumitsudzuke-tai.jp">info@sumitsudzuke-tai.jp</a></span>
+                            <span><a href="mailto:info@sumitsuzuke-tai.jp">info@sumitsuzuke-tai.jp</a></span>
                         </div>
                     </div>
                 </div>

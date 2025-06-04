@@ -3375,6 +3375,7 @@ body {
   /* ========== プログレスメーター ========== */
   /* ========== ステップコンテンツ ========== */
   /* ========== フォーム要素 ========== */
+  /* 🔥 3列レイアウト用のスタイル追加 */
   /* ========== 新機能：面積入力のユニット切り替え ========== */
   /* ========== 新機能：間取り入力 ========== */
   /* ========== 新機能：テキストエリア ========== */
@@ -3499,6 +3500,15 @@ body {
 }
 .lead-form .two-col > * {
   flex: 1 1 calc(50% - 9px);
+}
+.lead-form .three-col {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.lead-form .three-col > * {
+  flex: 1 1 calc(33.33% - 8px);
+  min-width: 0;
 }
 .lead-form .form-group {
   flex: 1 1 100%;
@@ -3647,11 +3657,29 @@ body {
   background: #cc5200;
 }
 @media (max-width: 768px) {
+  .lead-form {
+    /* 🔥 3列レイアウトのモバイル対応（横並び維持） */
+  }
   .lead-form .two-col {
     flex-direction: column;
   }
   .lead-form .two-col > * {
     flex: 1 1 100%;
+  }
+  .lead-form .three-col {
+    gap: 8px;
+  }
+  .lead-form .three-col > * {
+    flex: 1 1 calc(33.33% - 5px);
+    min-width: 0;
+  }
+  .lead-form .three-col .form-group label {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .lead-form .three-col .form-group input {
+    padding: 12px 10px;
+    font-size: 14px;
   }
   .lead-form .step-label {
     font-size: 10px;
@@ -3666,5 +3694,25 @@ body {
   }
   .lead-form .layout-rooms, .lead-form .layout-type {
     min-width: 100%;
+  }
+}
+@media (max-width: 480px) {
+  .lead-form {
+    /* 🔥 最小画面でも3列横並び維持 */
+  }
+  .lead-form .three-col {
+    gap: 6px;
+  }
+  .lead-form .three-col > * {
+    flex: 1 1 calc(33.33% - 4px);
+    min-width: 0;
+  }
+  .lead-form .three-col .form-group label {
+    font-size: 12px;
+    margin-bottom: 3px;
+  }
+  .lead-form .three-col .form-group input {
+    padding: 10px 8px;
+    font-size: 14px;
   }
 }/*# sourceMappingURL=main.css.map */

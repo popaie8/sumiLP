@@ -112,6 +112,57 @@ $labels = [
 .back-button i {
   font-size: 14px;
 }
+
+/* 🔥 3列レイアウト用のスタイル追加 */
+.form-row.three-col {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.form-row.three-col .form-group {
+  flex: 1;
+  min-width: 0; /* flexアイテムの最小幅をリセット */
+}
+
+/* モバイルでも横並びを維持 */
+@media (max-width: 768px) {
+  .form-row.three-col {
+    gap: 8px; /* モバイルではギャップを狭める */
+  }
+  
+  .form-row.three-col .form-group {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  /* モバイル用のフォント・パディング調整 */
+  .form-row.three-col .form-group label {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  
+  .form-row.three-col .form-group input {
+    padding: 12px 10px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-row.three-col {
+    gap: 6px; /* さらに狭いギャップ */
+  }
+  
+  .form-row.three-col .form-group label {
+    font-size: 12px;
+    margin-bottom: 3px;
+  }
+  
+  .form-row.three-col .form-group input {
+    padding: 10px 8px;
+    font-size: 14px;
+  }
+}
 </style>
 
 <!-- パンくずリスト -->
@@ -156,11 +207,11 @@ $labels = [
         </div>
       </div>
 
-      <!-- 🔥 修正: action属性を明示的に設定 -->
+      <!-- フォーム -->
       <form action="<?= esc_url( admin_url( 'admin-post.php' ) ); ?>"
             method="post" class="js-detail-form" id="detailForm">
 
-        <!-- ─────────  hidden 必須パラメータ  ───────── -->
+        <!-- hidden 必須パラメータ -->
         <input type="hidden" name="action" value="lead_submit">
         <input type="hidden" name="zip" value="<?= esc_attr( $zip ); ?>">
         <input type="hidden" name="property-type" value="<?= esc_attr( $type ); ?>" id="propertyType">
@@ -204,16 +255,30 @@ $labels = [
               </div>
             </div>
 
-            <div class="form-row two-col">
+            <div class="form-row">
               <div class="form-group">
                 <label>丁目 <span class="req">必須</span></label>
                 <select name="chome" class="js-chome" required>
                   <option value="">選択してください</option>
                 </select>
               </div>
+            </div>
+
+            <!-- 🔥 修正: 番地は必須、建物名・部屋番号は任意 -->
+            <div class="form-row three-col">
               <div class="form-group">
-                <label>番地・号・建物名・部屋番号 <span class="req">必須</span></label>
-                <input type="text" name="banchi" placeholder="例）10-3 ○○マンション101" required>
+                <label>番地・号 <span class="req">必須</span></label>
+                <input type="text" name="banchi" placeholder="例）10-3" required>
+              </div>
+              <div class="form-group">
+                <label>建物名</label>
+                <input type="text" name="building_name" placeholder="例）○○マンション">
+                <div class="note">※マンション・ビル等の場合のみ</div>
+              </div>
+              <div class="form-group">
+                <label>部屋番号</label>
+                <input type="text" name="room_number" placeholder="例）101">
+                <div class="note">※マンション・アパート等の場合のみ</div>
               </div>
             </div>
           </fieldset>
@@ -290,7 +355,7 @@ $labels = [
   </div>
 </section>
 
-<!-- 🔥 スクロール修正用スクリプト -->
+<!-- スクロール修正用スクリプト -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('detailForm');
@@ -299,34 +364,29 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('leadFormAjax:', window.leadFormAjax);
   }
   
-  // 🔥 重要: スムーススクロール修正（ページ最上部にいかないように）
+  // スムーススクロール修正（ページ最上部にいかないように）
   function fixSmoothScroll() {
-    // すべてのハッシュリンクを取得
     const hashLinks = document.querySelectorAll('a[href^="#"]');
     
     hashLinks.forEach(function(link) {
       link.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
         
-        // 空のハッシュまたは#のみの場合は何もしない
         if (!href || href === '#' || href === '#top') {
           e.preventDefault();
           return false;
         }
         
-        // ターゲット要素を探す
         const target = document.querySelector(href);
         if (target) {
           e.preventDefault();
           
-          // オフセット調整（ヘッダー分を考慮）
           const headerOffset = 100;
           const elementPosition = target.getBoundingClientRect().top;
           const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
           
           console.log('修正版スクロール:', href, 'オフセット:', offsetPosition);
           
-          // スムーススクロール実行
           window.scrollTo({
             top: offsetPosition,
             behavior: 'smooth'
@@ -341,12 +401,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // 少し遅延して実行
   setTimeout(fixSmoothScroll, 500);
 });
 </script>
 
-<!-- 🔥 簡易フッター（詳細フォーム用） -->
+<!-- 簡易フッター（詳細フォーム用） -->
 <footer class="simple-footer">
     <style>
     .simple-footer {

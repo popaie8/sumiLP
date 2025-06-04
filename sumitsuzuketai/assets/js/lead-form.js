@@ -1,5 +1,5 @@
 /**
- * リードフォーム制御（エラー修正版）
+ * 🔥 修正版リードフォーム制御（3つのフィールド対応）
  * 住所取得 + ステップフォーム + 入力記憶 + AJAX + モーダル
  */
 
@@ -25,52 +25,73 @@ const utils = {
     return urlParams.get(param);
   },
 
-  // 🔧 修正版メモリストレージ（エラー対策）
+  // 🔥 完全修正版メモリストレージ（dataプロパティ初期化問題解決）
   storage: {
-    data: {}, // 確実に初期化
+    // 🔥 修正: クラス外でdataプロパティを初期化
+    data: {},
     
-    save: function(data) {
+    save: function(newData) {
       try {
-        // this.data の確実な初期化
-        if (!this.data) {
+        // 🔥 修正: 毎回確実に初期化してからマージ
+        if (!this.data || typeof this.data !== 'object') {
           this.data = {};
         }
         
-        this.data = { ...this.data, ...data };
+        // 🔥 修正: newDataが有効な場合のみマージ
+        if (newData && typeof newData === 'object') {
+          this.data = { ...this.data, ...newData };
+        }
         
         // sessionStorageが使える場合は併用
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+        if (typeof Storage !== 'undefined' && window.sessionStorage) {
+          try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+          } catch (e) {
+            console.warn('sessionStorage保存エラー:', e);
+          }
         }
         
         console.log('📝 フォームデータ保存成功:', this.data);
+        return true;
       } catch (e) {
-        console.warn('フォームデータの保存に失敗:', e);
-        // エラーでもdataは初期化しておく
+        console.error('フォームデータの保存に失敗:', e);
+        // エラーでもdataは確実に初期化
         if (!this.data) {
           this.data = {};
         }
+        return false;
       }
     },
     
     load: function() {
       try {
+        // 🔥 修正: dataが存在しない場合は初期化
+        if (!this.data || typeof this.data !== 'object') {
+          this.data = {};
+        }
+        
         // sessionStorageから復元を試行
-        if (typeof sessionStorage !== 'undefined') {
-          const stored = sessionStorage.getItem(STORAGE_KEY);
-          if (stored) {
-            this.data = JSON.parse(stored);
-            return this.data;
+        if (typeof Storage !== 'undefined' && window.sessionStorage) {
+          try {
+            const stored = sessionStorage.getItem(STORAGE_KEY);
+            if (stored) {
+              const parsedData = JSON.parse(stored);
+              if (parsedData && typeof parsedData === 'object') {
+                this.data = parsedData;
+                console.log('🔄 データ復元成功:', this.data);
+                return this.data;
+              }
+            }
+          } catch (e) {
+            console.warn('sessionStorage復元エラー:', e);
           }
         }
         
         // フォールバック：メモリから返す
-        if (!this.data) {
-          this.data = {};
-        }
+        console.log('🔄 メモリデータを返却:', this.data);
         return this.data;
       } catch (e) {
-        console.warn('フォームデータの復元に失敗:', e);
+        console.error('フォームデータの復元に失敗:', e);
         this.data = {};
         return {};
       }
@@ -79,9 +100,10 @@ const utils = {
     clear: function() {
       try {
         this.data = {};
-        if (typeof sessionStorage !== 'undefined') {
+        if (typeof Storage !== 'undefined' && window.sessionStorage) {
           sessionStorage.removeItem(STORAGE_KEY);
         }
+        console.log('🗑️ データクリア完了');
       } catch (e) {
         console.warn('フォームデータのクリアに失敗:', e);
         this.data = {};
@@ -149,51 +171,96 @@ const addressApi = {
   }
 };
 
-// フォームデータ管理
+// 🔥 修正版フォームデータ管理（3つのフィールド対応）
 const formDataManager = {
   saveFormData() {
     const { form } = getFormElements();
-    if (!form) return;
+    if (!form) {
+      console.warn('フォームが見つかりません');
+      return false;
+    }
 
-    const formData = {};
-    const inputs = form.querySelectorAll('input, select, textarea');
-    
-    inputs.forEach(input => {
-      if (input.name && !input.classList.contains('readonly')) {
-        formData[input.name] = input.type === 'checkbox' ? input.checked : input.value;
-      }
-    });
-    
-    utils.storage.save(formData);
+    try {
+      const formData = {};
+      const inputs = form.querySelectorAll('input, select, textarea');
+      
+      inputs.forEach(input => {
+        if (input.name && !input.classList.contains('readonly')) {
+          formData[input.name] = input.type === 'checkbox' ? input.checked : input.value;
+        }
+      });
+      
+      // 🔥 修正: 3つのフィールドも確実に保存
+      const banchi = form.querySelector('input[name="banchi"]');
+      const buildingName = form.querySelector('input[name="building_name"]');
+      const roomNumber = form.querySelector('input[name="room_number"]');
+      
+      if (banchi) formData.banchi = banchi.value;
+      if (buildingName) formData.building_name = buildingName.value;
+      if (roomNumber) formData.room_number = roomNumber.value;
+      
+      return utils.storage.save(formData);
+    } catch (e) {
+      console.error('フォームデータ保存エラー:', e);
+      return false;
+    }
   },
 
   restoreFormData() {
     const { form } = getFormElements();
-    if (!form) return;
+    if (!form) {
+      console.warn('フォームが見つかりません');
+      return false;
+    }
 
-    const savedData = utils.storage.load();
-    const inputs = form.querySelectorAll('input, select, textarea');
-    
-    inputs.forEach(input => {
-      if (input.name && savedData[input.name] && !input.classList.contains('readonly')) {
-        if (input.type === 'checkbox') {
-          input.checked = savedData[input.name];
-        } else {
-          input.value = savedData[input.name];
-        }
+    try {
+      const savedData = utils.storage.load();
+      if (!savedData || typeof savedData !== 'object') {
+        console.log('復元するデータがありません');
+        return false;
       }
-    });
+
+      const inputs = form.querySelectorAll('input, select, textarea');
+      
+      inputs.forEach(input => {
+        if (input.name && savedData.hasOwnProperty(input.name) && !input.classList.contains('readonly')) {
+          if (input.type === 'checkbox') {
+            input.checked = Boolean(savedData[input.name]);
+          } else {
+            input.value = savedData[input.name] || '';
+          }
+        }
+      });
+      
+      console.log('✅ フォームデータ復元完了');
+      return true;
+    } catch (e) {
+      console.error('フォームデータ復元エラー:', e);
+      return false;
+    }
   },
 
   setupAutoSave() {
     const { form } = getFormElements();
-    if (!form) return;
+    if (!form) {
+      console.warn('フォームが見つかりません - オートセーブ無効');
+      return;
+    }
 
-    const debouncedSave = utils.debounce(this.saveFormData, 300);
+    const debouncedSave = utils.debounce(() => {
+      this.saveFormData();
+    }, 500);
     
+    // 🔥 修正: エラーハンドリングを追加
     ['input', 'change', 'blur'].forEach(event => {
-      form.addEventListener(event, debouncedSave, true);
+      try {
+        form.addEventListener(event, debouncedSave, true);
+      } catch (e) {
+        console.warn(`${event}イベント設定エラー:`, e);
+      }
     });
+    
+    console.log('🤖 オートセーブ設定完了');
   }
 };
 
@@ -216,26 +283,32 @@ class StepFormManager {
   bindEvents() {
     const { nextBtn, prevBtn, form } = getFormElements();
 
-    nextBtn?.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.handleNext();
-      return false;
-    });
+    if (nextBtn) {
+      nextBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleNext();
+        return false;
+      });
+    }
     
-    prevBtn?.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.handlePrev();
-      return false;
-    });
+    if (prevBtn) {
+      prevBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handlePrev();
+        return false;
+      });
+    }
     
-    form?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.handleSubmit(e);
-      return false;
-    });
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleSubmit(e);
+        return false;
+      });
+    }
   }
 
   handleNext() {
@@ -263,7 +336,7 @@ class StepFormManager {
     }
   }
 
-  // 🔧 修正版バリデーション（focusableチェック追加）
+  // 🔥 修正版バリデーション（3つのフィールド対応・非表示フィールド除外強化）
   validateCurrentStep() {
     const currentStepElement = document.querySelector(`.step-content[data-step="${this.currentStep}"]`);
     if (!currentStepElement) {
@@ -274,8 +347,16 @@ class StepFormManager {
     const requiredFields = currentStepElement.querySelectorAll('[required]');
     
     for (const field of requiredFields) {
-      // 🔧 非表示フィールドのチェックをスキップ
-      if (field.offsetParent === null || field.style.display === 'none') {
+      // 🔥 より厳密な表示・有効性チェック
+      const isVisible = field.offsetParent !== null && 
+                       field.offsetWidth > 0 &&
+                       field.offsetHeight > 0 &&
+                       field.style.display !== 'none' && 
+                       field.style.visibility !== 'hidden' &&
+                       !field.hasAttribute('disabled') &&
+                       !field.hasAttribute('readonly');
+      
+      if (!isVisible) {
         console.log('非表示フィールドをスキップ:', field.name);
         continue;
       }
@@ -283,17 +364,27 @@ class StepFormManager {
       const isEmpty = field.type === 'checkbox' ? !field.checked : !field.value?.trim();
       
       if (isEmpty) {
-        // フォーカス可能かチェック
+        console.log('必須フィールドが空:', field.name);
+        
+        // 🔥 安全なフォーカス処理
         try {
-          field.focus();
-          alert('必須項目を入力してください。');
-          return false;
+          if (typeof field.focus === 'function') {
+            field.focus();
+            field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
         } catch (e) {
-          console.warn('フォーカス不可能なフィールド:', field.name, e);
-          // フォーカス不可能な場合はアラートのみ
-          alert('必須項目を入力してください。');
-          return false;
+          console.warn('フォーカス不可能:', field.name, e);
         }
+        
+        // 🔥 フィールド固有のエラーメッセージ
+        let fieldLabel = field.name;
+        const labelElement = currentStepElement.querySelector(`label[for="${field.id}"], label[data-field="${field.name}"]`);
+        if (labelElement) {
+          fieldLabel = labelElement.textContent.replace(/\s*必須\s*/, '').trim();
+        }
+        
+        alert(`${fieldLabel}を入力してください。`);
+        return false;
       }
     }
     
@@ -307,7 +398,9 @@ class StepFormManager {
     });
     
     const activeStep = document.querySelector(`.step-content[data-step="${this.currentStep}"]`);
-    activeStep?.classList.add('active');
+    if (activeStep) {
+      activeStep.classList.add('active');
+    }
 
     // インジケーター更新
     document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
@@ -492,7 +585,7 @@ class StepFormManager {
     `;
   }
 
-  // 🔧 修正版土地フォーム（requiredを削除）
+  // 🔥 修正版土地フォーム（requiredを削除）
   generateLandForm() {
     return `
       <div class="form-row">
@@ -519,6 +612,7 @@ class StepFormManager {
     `;
   }
 
+  // 🔥 修正版ビルフォーム（必須項目を適切に設定）
   generateBuildingForm() {
     const ageOptions = utils.range(31).map(i => `<option value="${i-1}">${i-1}年</option>`).join('');
 
@@ -653,24 +747,29 @@ class StepFormManager {
   }
 }
 
-// 🔧 修正版AJAX送信・モーダル管理
+// 🔥 修正版AJAX送信・モーダル管理
 const ajaxSubmitter = {
   async submit(event) {
     const { form } = getFormElements();
-    if (!form) return;
+    if (!form) {
+      console.error('フォームが見つかりません');
+      return;
+    }
 
     console.log('AJAX送信開始');
 
     // UI状態管理
     const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
+    const originalText = submitBtn ? submitBtn.textContent : '送信';
     
     form.classList.add('form-sending');
-    submitBtn.disabled = true;
-    submitBtn.textContent = '送信中...';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '送信中...';
+    }
 
     try {
-      // フォームのaction属性を正しく取得
+      // 🔥 修正: フォームのaction属性を正しく取得
       let actionUrl = form.getAttribute('action');
       
       if (!actionUrl || actionUrl === '' || actionUrl.includes('[object')) {
@@ -680,9 +779,24 @@ const ajaxSubmitter = {
       
       console.log('送信先URL:', actionUrl);
 
-      // FormDataを作成してAJAXフラグを追加
+      // 🔥 修正: FormDataを作成してAJAXフラグを追加
       const formData = new FormData(form);
       formData.append('ajax', '1');
+      
+      // 🔥 修正: 3つのフィールドの値を確実に含める
+      const banchi = form.querySelector('input[name="banchi"]');
+      const buildingName = form.querySelector('input[name="building_name"]');
+      const roomNumber = form.querySelector('input[name="room_number"]');
+      
+      if (banchi && banchi.value) {
+        formData.set('banchi', banchi.value);
+      }
+      if (buildingName && buildingName.value) {
+        formData.set('building_name', buildingName.value);
+      }
+      if (roomNumber && roomNumber.value) {
+        formData.set('room_number', roomNumber.value);
+      }
       
       console.log('送信データ確認:');
       for (let [key, value] of formData.entries()) {
@@ -764,8 +878,10 @@ const ajaxSubmitter = {
     } finally {
       // UI状態復元
       form.classList.remove('form-sending');
-      submitBtn.disabled = false;
-      submitBtn.textContent = originalText;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     }
   },
 
@@ -874,9 +990,9 @@ document.addEventListener('click', (e) => {
 window.closeThanksModal = () => modalManager.hide();
 window.modalManager = modalManager; // グローバルアクセス用
 
-// 🔧 修正版初期化
+// 🔥 修正版初期化（3つのフィールド対応）
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('リードフォーム初期化開始');
+  console.log('🔥 リードフォーム初期化開始（3つのフィールド対応版）');
   
   try {
     const { form, propertyTypeInput } = getFormElements();
@@ -887,7 +1003,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 物件種別取得
-    const propertyType = propertyTypeInput?.value || 'mansion-unit';
+    const propertyType = propertyTypeInput?.value || utils.getUrlParam('property-type') || 'mansion-unit';
     console.log('物件種別:', propertyType);
 
     // ステップフォーム初期化
@@ -910,9 +1026,51 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    console.log('リードフォーム初期化完了');
+    // 🔥 追加: 3つのフィールドの初期化確認
+    setTimeout(() => {
+      const banchi = form.querySelector('input[name="banchi"]');
+      const buildingName = form.querySelector('input[name="building_name"]');
+      const roomNumber = form.querySelector('input[name="room_number"]');
+      
+      console.log('🔥 3つのフィールド確認:', {
+        banchi: banchi ? banchi.value : 'フィールドなし',
+        building_name: buildingName ? buildingName.value : 'フィールドなし',
+        room_number: roomNumber ? roomNumber.value : 'フィールドなし'
+      });
+    }, 1000);
+
+    console.log('✅ リードフォーム初期化完了（3つのフィールド対応版）');
     
   } catch (error) {
-    console.error('リードフォーム初期化エラー:', error);
+    console.error('❌ リードフォーム初期化エラー:', error);
   }
 });
+
+// 🔥 デバッグ用関数
+window.debugFormData = () => {
+  const { form } = getFormElements();
+  if (!form) {
+    console.log('フォームが見つかりません');
+    return;
+  }
+  
+  const formData = new FormData(form);
+  console.log('🔍 現在のフォームデータ:');
+  for (let [key, value] of formData.entries()) {
+    console.log(`${key}: ${value}`);
+  }
+  
+  // 3つのフィールドを特別にチェック
+  const banchi = form.querySelector('input[name="banchi"]');
+  const buildingName = form.querySelector('input[name="building_name"]');
+  const roomNumber = form.querySelector('input[name="room_number"]');
+  
+  console.log('🔍 3つのフィールドの状態:');
+  console.log('番地・号:', banchi ? banchi.value : 'フィールドなし');
+  console.log('建物名:', buildingName ? buildingName.value : 'フィールドなし');
+  console.log('部屋番号:', roomNumber ? roomNumber.value : 'フィールドなし');
+};
+
+window.debugStorage = () => {
+  console.log('🔍 ストレージデータ:', utils.storage.load());
+};

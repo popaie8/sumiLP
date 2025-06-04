@@ -1,61 +1,75 @@
 <?php
 /**
- * 段階的デバッグ版 - データベース保存付き（3つのフィールド対応）
+ * 🔥 改修版 - フォーム記録漏れ対策完全版（統合的データ処理）
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// AJAX ハンドラー（データベース保存付き）
-add_action('admin_post_nopriv_lead_submit', 'step_lead_submit');
-add_action('admin_post_lead_submit', 'step_lead_submit');
+// AJAX ハンドラー（統合版データベース保存付き）
+add_action('admin_post_nopriv_lead_submit', 'enhanced_lead_submit');
+add_action('admin_post_lead_submit', 'enhanced_lead_submit');
 
-function step_lead_submit() {
+function enhanced_lead_submit() {
     try {
+        // 🔥 全受信データのログ出力
+        error_log('🔍 受信した全POSTデータ: ' . print_r($_POST, true));
+        
         // nonce検証
         $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
         if (empty($nonce) || !wp_verify_nonce($nonce, 'lead_form_nonce')) {
             throw new Exception('セキュリティ検証失敗');
         }
         
-        // 🔥 基本データ取得（3つのフィールドに対応）
-        $fields = array();
-        $basic_fields = array(
+        // 🔥 統合的なフィールド定義（基本＋詳細）
+        $all_fields = array(
+            // 基本情報
             'zip', 'property-type', 'pref', 'city', 'town', 'chome', 
-            'banchi', 'building_name', 'room_number', // 🔥 3つに分離
-            'area', 'age', 'name', 'tel', 'email', 'remarks'
+            'banchi', 'building_name', 'room_number',
+            'name', 'tel', 'email', 'remarks',
+            
+            // 物件詳細
+            'layout_rooms', 'layout_type', 
+            'area', 'area_unit', 'building_area', 'building_area_unit', 
+            'land_area', 'land_area_unit', 'age', 'other_type', 'total_units',
+            'land_remarks'
         );
         
-        foreach ($basic_fields as $key) {
-            $fields[$key] = isset($_POST[$key]) ? sanitize_text_field(wp_unslash($_POST[$key])) : '';
-        }
+        // 🔥 確実なデータ取得
+        $collected_data = array();
         
-        // 物件詳細データ取得
-        $property_details = array();
-        $detail_fields = array('layout_rooms', 'layout_type', 'building_area', 'building_area_unit', 'land_area', 'land_area_unit', 'area_unit', 'other_type', 'total_units');
-        
-        foreach ($detail_fields as $field) {
-            if (isset($_POST[$field])) {
-                $property_details[$field] = sanitize_text_field(wp_unslash($_POST[$field]));
+        foreach ($all_fields as $field_name) {
+            $value = '';
+            
+            if (isset($_POST[$field_name])) {
+                $raw_value = wp_unslash($_POST[$field_name]);
+                $value = sanitize_text_field($raw_value);
+            }
+            
+            $collected_data[$field_name] = $value;
+            
+            // 🔥 重要フィールドのログ出力
+            if (in_array($field_name, ['banchi', 'building_name', 'room_number', 'name', 'tel', 'email', 'area', 'age'])) {
+                error_log("📝 フィールド[{$field_name}]: '{$value}'");
             }
         }
         
-        // 必須チェック
-        if (empty($fields['name']) || empty($fields['tel']) || empty($fields['email'])) {
-            throw new Exception('必須項目が不足しています');
+        // 🔥 必須チェック（より詳細に）
+        $required_fields = ['name', 'tel', 'email', 'banchi'];
+        
+        foreach ($required_fields as $required_field) {
+            if (empty($collected_data[$required_field])) {
+                error_log("❌ 必須フィールド未入力: {$required_field}");
+                throw new Exception("必須項目「{$required_field}」が入力されていません");
+            }
         }
         
-        // 🔥 番地のみ必須チェック（建物名・部屋番号は任意）
-        if (empty($fields['banchi'])) {
-            throw new Exception('番地・号は必須です');
-        }
-        
-        // データベース保存
+        // 🔥 データベース保存（統合版）
         $post_data = array(
             'post_type'   => 'lead',
             'post_status' => 'publish',
-            'post_title'  => $fields['name'] . ' - ' . current_time('Y-m-d H:i:s'),
+            'post_title'  => $collected_data['name'] . ' - ' . current_time('Y-m-d H:i:s'),
             'post_content' => ''
         );
         
@@ -69,32 +83,40 @@ function step_lead_submit() {
             throw new Exception('データベース保存失敗');
         }
         
-        // メタデータ保存
-        foreach ($fields as $k => $v) {
-            if (!empty($v)) {
-                update_post_meta($lead_id, $k, $v);
-            }
+        // 🔥 メタデータ保存（空文字列も保存）
+        foreach ($collected_data as $meta_key => $meta_value) {
+            update_post_meta($lead_id, $meta_key, $meta_value);
+            error_log("💾 メタデータ保存: {$meta_key} = '{$meta_value}'");
         }
         
-        foreach ($property_details as $k => $v) {
-            if (!empty($v)) {
-                update_post_meta($lead_id, $k, $v);
-            }
-        }
+        // 🔥 住所組み立て（確実版）
+        $full_address = trim(
+            $collected_data['pref'] . ' ' .
+            $collected_data['city'] . ' ' .
+            $collected_data['town'] . ' ' .
+            $collected_data['chome'] . '丁目 ' .
+            $collected_data['banchi'] . ' ' .
+            $collected_data['building_name'] . ' ' .
+            $collected_data['room_number']
+        );
+        
+        // 完全住所もメタデータとして保存
+        update_post_meta($lead_id, 'full_address', $full_address);
+        
+        error_log("🏠 完全住所: {$full_address}");
         
         // メール送信テスト
         $mail_success = false;
         try {
-            $mail_success = send_test_notification_email($fields, $property_details, $lead_id);
+            $mail_success = send_enhanced_notification_email($collected_data, $lead_id);
         } catch (Exception $mail_error) {
-            // メールエラーでも処理は継続
             error_log('メール送信エラー: ' . $mail_error->getMessage());
         }
         
         // スプレッドシート送信テスト
         $sheet_success = false;
         try {
-            $sheet_success = send_to_test_spreadsheet($fields, $property_details);
+            $sheet_success = send_to_enhanced_spreadsheet($collected_data);
         } catch (Exception $sheet_error) {
             error_log('スプレッドシート送信エラー: ' . $sheet_error->getMessage());
         }
@@ -106,13 +128,16 @@ function step_lead_submit() {
             'data' => array(
                 'message' => 'すべての処理が完了しました！',
                 'lead_id' => $lead_id,
-                'customer_name' => $fields['name'],
+                'customer_name' => $collected_data['name'],
                 'mail_sent' => $mail_success,
-                'sheet_sent' => $sheet_success
+                'sheet_sent' => $sheet_success,
+                'collected_fields_count' => count(array_filter($collected_data)) // 空でないフィールド数
             )
         ));
         
     } catch (Exception $e) {
+        error_log('❌ 処理エラー詳細: ' . $e->getMessage());
+        
         // エラーレスポンス
         header('Content-Type: application/json');
         http_response_code(500);
@@ -127,10 +152,9 @@ function step_lead_submit() {
     exit;
 }
 
-// 🔥 メール送信テスト関数（3つのフィールド対応）
-function send_test_notification_email($fields, $property_details, $lead_id) {
+// 🔥 強化されたメール送信関数
+function send_enhanced_notification_email($data, $lead_id) {
     try {
-        // 送信先を専用メールアドレスに変更
         $to = 'info@sumitsuzuke-tai.jp';
         
         if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
@@ -139,7 +163,7 @@ function send_test_notification_email($fields, $property_details, $lead_id) {
         
         $subject = '【住み続け隊】新しい査定依頼 #' . $lead_id;
         
-        // 物件種別の日本語表示
+        // 🔥 物件種別の日本語表示
         $property_type_names = array(
             'mansion-unit' => 'マンション（区分）',
             'house' => '一戸建て',
@@ -149,55 +173,81 @@ function send_test_notification_email($fields, $property_details, $lead_id) {
             'apartment-building' => 'アパート一棟',
             'other' => 'その他'
         );
-        $property_type_display = isset($property_type_names[$fields['property-type']]) 
-            ? $property_type_names[$fields['property-type']] 
-            : $fields['property-type'];
+        $property_type_display = isset($property_type_names[$data['property-type']]) 
+            ? $property_type_names[$data['property-type']] 
+            : $data['property-type'];
 
-        // 🔥 住所の組み立て（3つのフィールドに対応）
-        $full_address = $fields['pref'] . $fields['city'] . $fields['town'] . $fields['chome'] . '丁目 ';
-        $full_address .= $fields['banchi']; // 番地・号
-        
-        if (!empty($fields['building_name'])) {
-            $full_address .= ' ' . $fields['building_name']; // 建物名
-        }
-        
-        if (!empty($fields['room_number'])) {
-            $full_address .= ' ' . $fields['room_number']; // 部屋番号
-        }
+        // 🔥 住所の組み立て
+        $full_address = trim(
+            $data['pref'] . ' ' .
+            $data['city'] . ' ' .
+            $data['town'] . ' ' .
+            $data['chome'] . '丁目 ' .
+            $data['banchi'] . ' ' .
+            $data['building_name'] . ' ' .
+            $data['room_number']
+        );
 
-        $body = "【物件情報】\n";
-        $body .= "郵便番号: {$fields['zip']}\n";
+        $body = "【基本情報】\n";
+        $body .= "Lead ID: {$lead_id}\n";
+        $body .= "郵便番号: {$data['zip']}\n";
         $body .= "物件種別: {$property_type_display}\n";
         $body .= "住所: {$full_address}\n";
         
-        // 🔥 詳細住所情報（分離して表示）
         $body .= "\n【詳細住所】\n";
-        $body .= "番地・号: {$fields['banchi']}\n";
-        $body .= "建物名: {$fields['building_name']}\n";
-        $body .= "部屋番号: {$fields['room_number']}\n";
+        $body .= "番地・号: {$data['banchi']}\n";
+        $body .= "建物名: {$data['building_name']}\n";
+        $body .= "部屋番号: {$data['room_number']}\n";
         
-        if (!empty($fields['area'])) {
-            $area_unit = !empty($property_details['area_unit']) ? $property_details['area_unit'] : '㎡';
-            $body .= "\n面積: {$fields['area']}{$area_unit}\n";
+        $body .= "\n【物件詳細】\n";
+        if (!empty($data['layout_rooms']) && !empty($data['layout_type'])) {
+            $body .= "間取り: {$data['layout_rooms']}{$data['layout_type']}\n";
         }
         
-        if (!empty($fields['age']) && $fields['property-type'] !== 'land') {
-            $age_display = ($fields['age'] === '31') ? '31年以上・正確に覚えていない' : $fields['age'] . '年';
+        if (!empty($data['area'])) {
+            $area_unit = !empty($data['area_unit']) ? $data['area_unit'] : '㎡';
+            $body .= "専有面積: {$data['area']}{$area_unit}\n";
+        }
+        
+        if (!empty($data['building_area'])) {
+            $building_area_unit = !empty($data['building_area_unit']) ? $data['building_area_unit'] : '㎡';
+            $body .= "建物面積: {$data['building_area']}{$building_area_unit}\n";
+        }
+        
+        if (!empty($data['land_area'])) {
+            $land_area_unit = !empty($data['land_area_unit']) ? $data['land_area_unit'] : '㎡';
+            $body .= "土地面積: {$data['land_area']}{$land_area_unit}\n";
+        }
+        
+        if (!empty($data['age'])) {
+            $age_display = ($data['age'] === '31') ? '31年以上・正確に覚えていない' : $data['age'] . '年';
             $body .= "築年数: {$age_display}\n";
         }
         
-        $body .= "\n【お客様情報】\n";
-        $body .= "お名前: {$fields['name']}\n";
-        $body .= "電話: {$fields['tel']}\n";
-        $body .= "メール: {$fields['email']}\n";
+        if (!empty($data['other_type'])) {
+            $body .= "種類: {$data['other_type']}\n";
+        }
         
-        if (!empty($fields['remarks'])) {
+        if (!empty($data['total_units'])) {
+            $body .= "総戸数: {$data['total_units']}\n";
+        }
+        
+        $body .= "\n【お客様情報】\n";
+        $body .= "お名前: {$data['name']}\n";
+        $body .= "電話: {$data['tel']}\n";
+        $body .= "メール: {$data['email']}\n";
+        
+        if (!empty($data['remarks'])) {
             $body .= "\n【ご要望・備考】\n";
-            $body .= $fields['remarks'] . "\n";
+            $body .= $data['remarks'] . "\n";
+        }
+        
+        if (!empty($data['land_remarks'])) {
+            $body .= "\n【土地備考】\n";
+            $body .= $data['land_remarks'] . "\n";
         }
         
         $body .= "\n---\n";
-        $body .= "Lead ID: {$lead_id}\n";
         $body .= "投稿日時: " . current_time('Y-m-d H:i:s') . "\n";
         $body .= "管理画面: " . admin_url("post.php?post={$lead_id}&action=edit") . "\n";
         
@@ -206,29 +256,46 @@ function send_test_notification_email($fields, $property_details, $lead_id) {
             'From: 住み続け隊査定フォーム <info@sumitsuzuke-tai.jp>'
         );
         
-        return wp_mail($to, $subject, $body, $headers);
+        $result = wp_mail($to, $subject, $body, $headers);
+        
+        error_log('📧 メール送信結果: ' . ($result ? '成功' : '失敗'));
+        
+        return $result;
         
     } catch (Exception $e) {
-        error_log('メール送信例外: ' . $e->getMessage());
+        error_log('📧 メール送信例外: ' . $e->getMessage());
         return false;
     }
 }
 
-// 🔥 スプレッドシート送信テスト関数（3つのフィールド対応）
-function send_to_test_spreadsheet($fields, $property_details) {
+// 🔥 強化されたスプレッドシート送信関数
+function send_to_enhanced_spreadsheet($data) {
     try {
         $url = 'https://script.google.com/macros/s/AKfycbx-FDuymWxq4yyCN5eWXxpqnbmx7pCe4loaPzpYn41vccjt4_ceM7wmA1Qf_NV3Mmvz/exec';
         
-        // 🔥 3つのフィールドを含むデータ
-        $data = array_merge($fields, $property_details, array(
-            'secret' => 'sumitsu2025',
-            // 🔥 完全住所も追加
-            'full_address' => $fields['pref'] . $fields['city'] . $fields['town'] . $fields['chome'] . '丁目 ' . $fields['banchi'] . ' ' . $fields['building_name'] . ' ' . $fields['room_number']
-        ));
+        // 🔥 完全住所の組み立て
+        $full_address = trim(
+            $data['pref'] . ' ' .
+            $data['city'] . ' ' .
+            $data['town'] . ' ' .
+            $data['chome'] . '丁目 ' .
+            $data['banchi'] . ' ' .
+            $data['building_name'] . ' ' .
+            $data['room_number']
+        );
+        
+        // 🔥 送信データの準備（全フィールド）
+        $send_data = $data;
+        $send_data['secret'] = 'sumitsu2025';
+        $send_data['full_address'] = $full_address;
+        $send_data['timestamp'] = current_time('Y-m-d H:i:s');
+        
+        // 🔥 送信前ログ
+        error_log('📊 スプレッドシート送信データ: ' . print_r($send_data, true));
         
         $response = wp_remote_post($url, array(
-            'body' => $data,
-            'timeout' => 10,
+            'body' => $send_data,
+            'timeout' => 15,
             'sslverify' => false
         ));
         
@@ -239,12 +306,12 @@ function send_to_test_spreadsheet($fields, $property_details) {
         $code = wp_remote_retrieve_response_code($response);
         $body = wp_remote_retrieve_body($response);
         
-        error_log("スプレッドシート送信: Code:{$code}, Body:{$body}");
+        error_log("📊 スプレッドシート送信結果: Code:{$code}, Body:{$body}");
         
         return $code === 200;
         
     } catch (Exception $e) {
-        error_log('スプレッドシート送信例外: ' . $e->getMessage());
+        error_log('📊 スプレッドシート送信例外: ' . $e->getMessage());
         return false;
     }
 }
@@ -883,18 +950,18 @@ add_action('init', function() {
 });
 
 /* ======================================================
- * 🔥 管理画面での査定依頼詳細表示（3つのフィールド対応）
+ * 🔥 管理画面での査定依頼詳細表示（統合版）
  * ====================================================== */
 add_action('add_meta_boxes', function() {
     add_meta_box(
         'lead_details',
         '査定依頼詳細',
-        'lead_details_meta_box',
+        'enhanced_lead_details_meta_box',
         'lead'
     );
 });
 
-function lead_details_meta_box($post) {
+function enhanced_lead_details_meta_box($post) {
     $meta = get_post_meta($post->ID);
     
     echo '<table class="form-table">';
@@ -937,29 +1004,20 @@ function lead_details_meta_box($post) {
     $building_name = isset($meta['building_name'][0]) ? $meta['building_name'][0] : '';
     $room_number = isset($meta['room_number'][0]) ? $meta['room_number'][0] : '';
     
-    if ($banchi) {
-        echo "<tr><th>番地・号</th><td>" . esc_html($banchi) . "</td></tr>";
-    }
-    if ($building_name) {
-        echo "<tr><th>建物名</th><td>" . esc_html($building_name) . "</td></tr>";
-    }
-    if ($room_number) {
-        echo "<tr><th>部屋番号</th><td>" . esc_html($room_number) . "</td></tr>";
-    }
+    // 🔥 統合版：空文字列でも表示
+    echo "<tr><th>番地・号</th><td>" . esc_html($banchi) . "</td></tr>";
+    echo "<tr><th>建物名</th><td>" . esc_html($building_name) . "</td></tr>";
+    echo "<tr><th>部屋番号</th><td>" . esc_html($room_number) . "</td></tr>";
     
     // 🔥 完全住所表示
-    if ($banchi || $building_name || $room_number) {
-        $pref = isset($meta['pref'][0]) ? $meta['pref'][0] : '';
-        $city = isset($meta['city'][0]) ? $meta['city'][0] : '';
-        $town = isset($meta['town'][0]) ? $meta['town'][0] : '';
-        $chome = isset($meta['chome'][0]) ? $meta['chome'][0] : '';
-        
-        $full_address = $pref . $city . $town . $chome . '丁目 ' . $banchi;
-        if ($building_name) $full_address .= ' ' . $building_name;
-        if ($room_number) $full_address .= ' ' . $room_number;
-        
-        echo "<tr><th style='background: #e8f4fd;'>完全住所</th><td style='background: #e8f4fd; font-weight: bold;'>" . esc_html($full_address) . "</td></tr>";
-    }
+    $pref = isset($meta['pref'][0]) ? $meta['pref'][0] : '';
+    $city = isset($meta['city'][0]) ? $meta['city'][0] : '';
+    $town = isset($meta['town'][0]) ? $meta['town'][0] : '';
+    $chome = isset($meta['chome'][0]) ? $meta['chome'][0] : '';
+    
+    $full_address = trim($pref . ' ' . $city . ' ' . $town . ' ' . $chome . '丁目 ' . $banchi . ' ' . $building_name . ' ' . $room_number);
+    
+    echo "<tr><th style='background: #e8f4fd;'>完全住所</th><td style='background: #e8f4fd; font-weight: bold;'>" . esc_html($full_address) . "</td></tr>";
     
     // 物件詳細
     echo '<tr><th colspan="2"><strong>🏠 物件詳細</strong></th></tr>';
@@ -967,11 +1025,11 @@ function lead_details_meta_box($post) {
     // 間取り
     $layout_rooms = isset($meta['layout_rooms'][0]) ? $meta['layout_rooms'][0] : '';
     $layout_type = isset($meta['layout_type'][0]) ? $meta['layout_type'][0] : '';
-    if ($layout_rooms && $layout_type) {
+    if ($layout_rooms || $layout_type) {
         echo "<tr><th>間取り</th><td>" . esc_html($layout_rooms . $layout_type) . "</td></tr>";
     }
     
-    // 面積情報
+    // 🔥 面積情報（空でも表示）
     $area_fields = array(
         'area' => '専有面積',
         'building_area' => '建物面積',
@@ -981,28 +1039,29 @@ function lead_details_meta_box($post) {
     foreach ($area_fields as $key => $label) {
         $value = isset($meta[$key][0]) ? $meta[$key][0] : '';
         $unit = isset($meta[$key . '_unit'][0]) ? $meta[$key . '_unit'][0] : '㎡';
-        if ($value) {
-            echo "<tr><th>{$label}</th><td>" . esc_html($value . $unit) . "</td></tr>";
+        
+        if ($value || isset($meta[$key][0])) { // メタデータが存在すれば表示
+            echo "<tr><th>{$label}</th><td>" . esc_html($value . ($value ? $unit : '')) . "</td></tr>";
         }
     }
     
     // 築年数
     $age = isset($meta['age'][0]) ? $meta['age'][0] : '';
-    if ($age) {
-        $age_display = $age === '31' ? '31年以上・正確に覚えていない' : $age . '年';
+    if ($age || isset($meta['age'][0])) {
+        $age_display = $age === '31' ? '31年以上・正確に覚えていない' : ($age ? $age . '年' : '');
         echo "<tr><th>築年数</th><td>" . esc_html($age_display) . "</td></tr>";
     }
     
     // その他種類
     $other_type = isset($meta['other_type'][0]) ? $meta['other_type'][0] : '';
-    if ($other_type) {
+    if ($other_type || isset($meta['other_type'][0])) {
         echo "<tr><th>種類</th><td>" . esc_html($other_type) . "</td></tr>";
     }
     
     // 総戸数
     $total_units = isset($meta['total_units'][0]) ? $meta['total_units'][0] : '';
-    if ($total_units) {
-        echo "<tr><th>総戸数</th><td>" . esc_html($total_units . '戸') . "</td></tr>";
+    if ($total_units || isset($meta['total_units'][0])) {
+        echo "<tr><th>総戸数</th><td>" . esc_html($total_units . ($total_units ? '戸' : '')) . "</td></tr>";
     }
     
     // お客様情報
@@ -1029,14 +1088,60 @@ function lead_details_meta_box($post) {
     
     // 備考
     $remarks = isset($meta['remarks'][0]) ? $meta['remarks'][0] : '';
-    if ($remarks) {
+    if ($remarks || isset($meta['remarks'][0])) {
         echo "<tr><th>ご要望・備考</th><td>" . nl2br(esc_html($remarks)) . "</td></tr>";
+    }
+    
+    // 土地備考
+    $land_remarks = isset($meta['land_remarks'][0]) ? $meta['land_remarks'][0] : '';
+    if ($land_remarks || isset($meta['land_remarks'][0])) {
+        echo "<tr><th>土地備考</th><td>" . nl2br(esc_html($land_remarks)) . "</td></tr>";
+    }
+    
+    // 🔥 データ完全性チェック
+    echo '<tr><th colspan="2"><strong>📊 データ完全性</strong></th></tr>';
+    
+    $all_fields = array(
+        'zip', 'property-type', 'pref', 'city', 'town', 'chome', 
+        'banchi', 'building_name', 'room_number',
+        'name', 'tel', 'email', 'remarks',
+        'layout_rooms', 'layout_type', 
+        'area', 'area_unit', 'building_area', 'building_area_unit', 
+        'land_area', 'land_area_unit', 'age', 'other_type', 'total_units',
+        'land_remarks'
+    );
+    
+    $filled_fields = 0;
+    $empty_fields = array();
+    
+    foreach ($all_fields as $field) {
+        $value = isset($meta[$field][0]) ? $meta[$field][0] : '';
+        if (!empty($value)) {
+            $filled_fields++;
+        } else {
+            $empty_fields[] = $field;
+        }
+    }
+    
+    $total_fields = count($all_fields);
+    $completion_rate = round(($filled_fields / $total_fields) * 100, 1);
+    
+    echo "<tr><th>入力完了率</th><td><strong>{$completion_rate}%</strong> ({$filled_fields}/{$total_fields}フィールド)</td></tr>";
+    
+    if (!empty($empty_fields)) {
+        echo "<tr><th>未入力フィールド</th><td style='color: #666; font-size: 12px;'>" . implode(', ', $empty_fields) . "</td></tr>";
     }
     
     // 投稿情報
     echo '<tr><th colspan="2"><strong>📅 投稿情報</strong></th></tr>';
     echo "<tr><th>受付日時</th><td>" . get_the_date('Y年m月d日 H:i:s', $post->ID) . "</td></tr>";
     echo "<tr><th>Lead ID</th><td>" . $post->ID . "</td></tr>";
+    
+    // 🔥 完全住所をメタデータで確認
+    $stored_full_address = isset($meta['full_address'][0]) ? $meta['full_address'][0] : '';
+    if ($stored_full_address) {
+        echo "<tr><th>保存済み完全住所</th><td style='background: #f0f8ff;'>" . esc_html($stored_full_address) . "</td></tr>";
+    }
     
     echo '</table>';
     
